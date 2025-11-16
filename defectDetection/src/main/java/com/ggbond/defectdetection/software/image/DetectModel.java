@@ -160,6 +160,8 @@ public class DetectModel {
                             random.nextDouble(1),
                             null,
                             category[random.nextInt(4)],
+                            null,
+                            null,
                             null
                     );
                     defectionList.add(defection);

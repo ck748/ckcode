@@ -66,6 +66,9 @@ public class ImageModule {
     DataModule dataModule;
 
     @Autowired
+    private DefectionSeverityService severityService;
+
+    @Autowired
     private RealtimeInterface realtimeInterface;
 
 
@@ -136,6 +139,8 @@ public class ImageModule {
             Integer categoryId=defectionCategoryService.getOne(lqw1).getId();
             defection.setCategoryId(categoryId);
             defection.setDetectId(detectId);
+            // 在 defection.setDetectId(detectId); 之后添加:
+            severityService.evaluateDefection(defection);
             defectionService.save(defection);
 
         }

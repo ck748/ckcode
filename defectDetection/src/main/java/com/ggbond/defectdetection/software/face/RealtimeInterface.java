@@ -123,7 +123,7 @@ public class RealtimeInterface extends JPanel {
             table.setPreferredScrollableViewportSize(new Dimension(sonWidth-screenWidth-20,screenHeight-50));
 
             DefaultTableModel tableModel= (DefaultTableModel) table.getModel();
-            String[] columns={"序号","缺陷","概率"};
+            String[] columns={"序号","缺陷","概率","严重等级","修复建议"};
             tableModel.addColumn(columns[0]);
             tableModel.addColumn(columns[1]);
             tableModel.addColumn(columns[2]);
@@ -182,7 +182,13 @@ public class RealtimeInterface extends JPanel {
             //添加新数据
             for(int i=0;i<defectionList.size();i++){
                 Defection defection=defectionList.get(i);
-                String[] rowData={i+"",defection.getCategory(),defection.getScore()+""};
+                String[] rowData={
+                        i+"",
+                        defection.getCategory(),
+                        defection.getScore()+"",
+                        defection.getSeverityLevel()+"级",
+                        defection.getRepairSuggestion()
+                };
                 model.addRow(rowData);
             }
         }

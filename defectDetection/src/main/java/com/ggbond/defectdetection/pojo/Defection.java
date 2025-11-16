@@ -24,4 +24,6 @@ public class Defection {
     private Integer detectId;
     private String category;
     private Integer categoryId;
+    private Integer severityLevel;  // 严重程度等级 1-5
+    private String repairSuggestion; // 修复建议
 }
