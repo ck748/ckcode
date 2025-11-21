@@ -3,9 +3,9 @@
     <div class="login-wrapper">
       <div class="login-left">
         <div class="image-overlay"></div>
-        <img src="../assets/123123.jpg" alt="钢铁检测系统" class="login-image">
+        <img src="../assets/2.png" alt="钢铁检测系统" class="login-image">
         <div class="welcome-text">
-          <h2>钢铁检测系统</h2>
+          <h2>中轴检测系统</h2>
           <p>专业 · 精准 · 高效</p>
         </div>
       </div>

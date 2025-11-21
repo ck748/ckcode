@@ -11,7 +11,7 @@
         </div>
 
         <el-menu 
-          :default-openeds="['info', 'sysmanager']" 
+          :default-openeds="['info', 'sysmanager', 'chainmanager']" 
           :collapse="isCollapse"  
           :collapse-transition="false" 
           router 
@@ -21,6 +21,13 @@
           text-color="#b0bec5"
           active-text-color="#ffffff"
         >
+          <!-- 数据大屏菜单项 - 跳转到 /daping -->
+          <el-menu-item index="/daping" class="menu-item">
+            <i class="el-icon-data-analysis menu-icon"></i>
+            <span slot="title" class="menu-text">数据大屏</span>
+          </el-menu-item>
+
+          <!-- 概要信息菜单项 - 跳转到 /dashboard -->
           <el-menu-item index="/dashboard" class="menu-item">
             <i class="el-icon-monitor menu-icon"></i>
             <span slot="title" class="menu-text">概要信息</span>
@@ -37,24 +44,42 @@
             </el-menu-item>
             <el-menu-item index="/charts" class="submenu-item">
               <i class="el-icon-data-analysis menu-sub-icon"></i>
-              <span>监测报表</span>
+              <span>检测报表</span>
+            </el-menu-item>
+            <el-menu-item index="/history-carousel" class="submenu-item">
+              <i class="el-icon-picture menu-sub-icon"></i>
+              <span>历史轮播</span>
             </el-menu-item>
             <el-menu-item index="/warning" class="submenu-item">
               <i class="el-icon-warning menu-sub-icon"></i>
-              <span>异常管理</span>
+              <span>预警信息</span>
             </el-menu-item>
           </el-submenu>
           
-          <el-menu-item index="/log" class="menu-item">
-            <i class="el-icon-notebook-2 menu-icon"></i>
-            <span slot="title" class="menu-text">日志管理</span>
-          </el-menu-item>
+          <el-submenu index="chainmanager">
+            <template slot="title">
+              <i class="el-icon-connection menu-icon"></i>
+              <span class="menu-text">链上管理</span>
+            </template>
+            <el-menu-item index="/production" class="submenu-item">
+              <i class="el-icon-cpu menu-sub-icon"></i>
+              <span>生产</span>
+            </el-menu-item>
+            <el-menu-item index="/assembly" class="submenu-item">
+              <i class="el-icon-set-up menu-sub-icon"></i>
+              <span>组装</span>
+            </el-menu-item>
+          </el-submenu>
           
           <el-submenu index="sysmanager">
             <template slot="title">
               <i class="el-icon-setting menu-icon"></i>
               <span class="menu-text">系统管理</span>
             </template>
+            <el-menu-item index="/log" class="submenu-item">
+              <i class="el-icon-notebook-2 menu-sub-icon"></i>
+              <span>日志管理</span>
+            </el-menu-item>
             <el-menu-item index="/apimanager" class="submenu-item">
               <i class="el-icon-key menu-sub-icon"></i>
               <span>API管理</span>
@@ -148,6 +173,10 @@ export default {
   },
   mounted() {
     this.title = '智检控系统';
+    // 设置默认路由为数据大屏
+    if (this.$route.path === '/') {
+      this.$router.replace('/daping');
+    }
   },
   methods: {
     updateUser(user) {
@@ -183,6 +212,7 @@ export default {
 </script>
 
 <style scoped>
+/* 样式保持不变，与之前相同 */
 .home-container {
   height: 100vh;
   overflow: hidden;

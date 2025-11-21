@@ -1,7 +1,7 @@
 <template>
   <div class="log-container">
     <!-- 顶部筛选区域 -->
-    <div class="filter-section">
+    <div class="filter-section" ref="filterRef">
       <div class="filter-group">
         <span class="filter-label">时间段:</span>
         <div class="date-picker-group">
@@ -32,23 +32,30 @@
     <!-- 表格区域 -->
     <div class="table-section">
       <el-card class="table-card">
-        <el-table 
-        :data="filteredtableData" 
-        style="width: 100%"
-        stripe
-        v-loading="loading"
-        element-loading-text="数据加载中..."
-        element-loading-spinner="el-icon-loading"
->
-        <el-table-column type="index" label="编号" width="100" align="center" header-align="center"></el-table-column>
-        <el-table-column prop="mainRole" label="主体" min-width="120" align="center" header-align="center"></el-table-column>
-        <el-table-column prop="label" label="工号或账号" min-width="150" align="center" header-align="center"></el-table-column>
-        <el-table-column prop="op" label="操作" min-width="180" align="center" header-align="center"></el-table-column>
-        <el-table-column prop="time" label="时间" min-width="160" align="center" header-align="center"></el-table-column>
-</el-table>
+        <div class="table-wrapper">
+          <el-table 
+            :data="filteredtableData" 
+            style="width: 100%"
+            stripe
+            v-loading="loading"
+            element-loading-text="数据加载中..."
+            element-loading-spinner="el-icon-loading"
+            :max-height="tableHeight"
+          >
+            <el-table-column label="编号" width="100" align="center" header-align="center">
+              <template slot-scope="scope">
+                <span>{{ (page - 1) * pageSize + scope.$index + 1 }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="mainRole" label="主体" min-width="120" align="center" header-align="center"></el-table-column>
+            <el-table-column prop="label" label="工号或账号" min-width="150" align="center" header-align="center"></el-table-column>
+            <el-table-column prop="op" label="操作" min-width="180" align="center" header-align="center"></el-table-column>
+            <el-table-column prop="time" label="时间" min-width="160" align="center" header-align="center"></el-table-column>
+          </el-table>
+        </div>
         
         <!-- 分页 -->
-        <div class="pagination-container">
+        <div class="pagination-container" ref="paginationRef">
           <el-pagination
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
@@ -82,6 +89,7 @@ export default {
       dateL: '',
       dateR: '',
       loading: false,
+      tableHeight: 400,
       pickerOptions: {
         shortcuts: [
           {
@@ -110,13 +118,22 @@ export default {
           }
         ],
         disabledDate(time) {
-          return time.getTime() > Date.now(); // 禁止选择未来日期
+          return time.getTime() > Date.now();
         }
       },
     };
   },
   created() {
     this.fetchData();
+    this.$nextTick(() => {
+      setTimeout(() => {
+        this.calculateTableHeight();
+      }, 100);
+    });
+    window.addEventListener('resize', this.calculateTableHeight);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.calculateTableHeight);
   },
   computed: {
     filteredtableData() {
@@ -134,18 +151,52 @@ export default {
     }
   },
   methods: {
+    calculateTableHeight() {
+      const viewportHeight = window.innerHeight;
+      const logContainer = document.querySelector('.log-container');
+      
+      if (!logContainer) return;
+      
+      // 获取容器距离顶部的距离
+      const containerTop = logContainer.getBoundingClientRect().top;
+      
+      // 获取筛选区域高度
+      let filterHeight = 0;
+      if (this.$refs.filterRef) {
+        filterHeight = this.$refs.filterRef.offsetHeight;
+      }
+      
+      // 获取分页区域高度（使用固定值，因为此时可能还未渲染）
+      const paginationHeight = 80; // 分页组件的大概高度
+      
+      // 计算可用高度：视口高度 - 容器顶部距离 - 筛选区域高度 - 分页区域高度 - 安全边距
+      const safeMargin = 40; // 安全边距
+      const availableHeight = viewportHeight - containerTop - filterHeight - paginationHeight - safeMargin;
+      
+      // 设置表格高度，确保至少有200px
+      this.tableHeight = Math.max(availableHeight, 200);
+      
+      console.log('表格高度计算:', {
+        viewportHeight,
+        containerTop,
+        filterHeight,
+        paginationHeight,
+        availableHeight,
+        tableHeight: this.tableHeight
+      });
+    },
     search() {
       this.searchName = this.searchName.trim();
     },
     mainTime() {
       console.log("这里是时间段哦", this.dateRange);
       if (this.dateRange && this.dateRange.length === 2) {
-        let startTime = new Date(this.dateRange[0]); // 将开始时间字符串转换为日期对象
-        let endTime = new Date(this.dateRange[1]); // 将结束时间字符串转换为日期对象
-        startTime.setHours(23, 59, 59, 999); // 将开始时间设置为当天的23:59:59
-        endTime.setHours(23, 59, 59, 999); // 将结束时间设置为当天的23:59:59
-        this.dateL = startTime.getTime(); // 获取开始时间的时间戳
-        this.dateR = endTime.getTime(); // 获取结束时间的时间戳
+        let startTime = new Date(this.dateRange[0]);
+        let endTime = new Date(this.dateRange[1]);
+        startTime.setHours(23, 59, 59, 999);
+        endTime.setHours(23, 59, 59, 999);
+        this.dateL = startTime.getTime();
+        this.dateR = endTime.getTime();
         console.log("开始时间的时间戳：", this.dateL);
         console.log("结束时间的时间戳：", this.dateR);
         this.fetchData();
@@ -162,17 +213,23 @@ export default {
           dateL: this.dateL,
           dateR: this.dateR
         }
-      })  // 发起 GET 请求获取数据
+      })
         .then(response => {
           this.loading = false;
           if (response.data.code === 200) {
-            this.tableData = response.data.data;  // 将获取的数据填充到tableData中
+            this.tableData = response.data.data;
             console.log("22222222222", response.data.data)
             this.total = this.tableData[0].totals;
             console.log("1111111111111111111", this.total)
             this.$message({
               message: '查询到日志信息',
               type: 'success'
+            });
+            // 数据加载完成后重新计算高度
+            this.$nextTick(() => {
+              setTimeout(() => {
+                this.calculateTableHeight();
+              }, 100);
             });
           } else {
             this.$message.error("日志信息获取失败")
@@ -189,6 +246,7 @@ export default {
     },
     handleSizeChange(val) {
       this.pageSize = val;
+      this.page = 1; // 重置到第一页
       this.fetchData();
     },
     handleCurrentChange(val) {
@@ -204,6 +262,9 @@ export default {
   padding: 20px;
   background-color: #f5f7fa;
   min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .filter-section {
@@ -215,6 +276,8 @@ export default {
   padding: 16px 20px;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .filter-group {
@@ -253,19 +316,37 @@ export default {
 }
 
 .table-section {
-  margin-top: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .table-card {
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   border: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: hidden;
 }
 
 .pagination-container {
-  margin-top: 20px;
+  margin-top: auto; /* 让分页始终在底部 */
   display: flex;
   justify-content: flex-end;
+  flex-shrink: 0;
+  padding: 20px;
+  background: white;
+  border-top: 1px solid #ebeef5;
+  min-height: 80px; /* 确保分页区域有足够高度 */
+  box-sizing: border-box;
 }
 
 /* 表格样式优化 */
@@ -277,6 +358,13 @@ export default {
   background-color: #f8f9fa;
   color: #606266;
   font-weight: 600;
+}
+
+/* 确保表格内容完整显示 */
+:deep(.el-table .cell) {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 /* 响应式设计 */
@@ -308,6 +396,11 @@ export default {
   
   .confirm-btn {
     width: 100%;
+  }
+  
+  .pagination-container {
+    padding: 15px 10px;
+    min-height: 70px;
   }
 }
 </style>

@@ -9,6 +9,7 @@ import com.ggbond.defectdetection.dto.DetectResDto;
 import com.ggbond.defectdetection.pojo.Defection;
 import com.ggbond.defectdetection.pojo.DetectLog;
 import com.ggbond.defectdetection.pojo.Manager;
+import com.ggbond.defectdetection.service.AIAnalysisService;
 import com.ggbond.defectdetection.service.DefectionService;
 import com.ggbond.defectdetection.service.DetectLogService;
 import com.ggbond.defectdetection.service.WorkOrderService;
@@ -48,6 +49,9 @@ public class DetectInfoController {
 
     @Autowired
     DataModule dataModule;
+
+    @Autowired
+    AIAnalysisService aiAnalysisService;
 
 
     @GetMapping("/info/history")
@@ -256,6 +260,54 @@ public class DetectInfoController {
         chartsDtoList.add(chartsDto3);
 
         return Result.success("加载成功",chartsDtoList);
+    }
+
+    /**
+     * AI分析缺陷等级和修复建议
+     */
+    @PostMapping("/ai/analyze")
+    public Result aiAnalyzeHandler(@RequestParam Integer detectId) {
+        try {
+            // 获取检测记录
+            DetectLog detectLog = detectLogService.getById(detectId);
+            if (detectLog == null) {
+                return Result.fail("检测记录不存在");
+            }
+
+            // 获取缺陷列表
+            LambdaQueryWrapper<Defection> lqw = new LambdaQueryWrapper<>();
+            lqw.eq(Defection::getDetectId, detectId);
+            List<Defection> defectionList = defectionService.list(lqw);
+
+            // 如果没有缺陷，返回成功结果
+            if (defectionList == null || defectionList.isEmpty()) {
+                Map<String, Object> noDefectResult = new HashMap<>();
+                noDefectResult.put("overallAssessment", "产品质量优秀，未检测到任何缺陷。该产品符合质量标准，可以正常出厂。");
+                noDefectResult.put("overallSeverity", 0);
+                noDefectResult.put("defections", new ArrayList<>());
+                noDefectResult.put("success", true);
+                return Result.success("AI分析完成", noDefectResult);
+            }
+
+            // 调用AI分析
+            Map<String, Object> analysisResult = aiAnalysisService.analyzeDefections(defectionList);
+
+            if (!(boolean) analysisResult.getOrDefault("success", false)) {
+                return Result.fail(analysisResult.getOrDefault("error", "AI分析失败").toString());
+            }
+
+            // 更新缺陷信息到数据库
+            for (Defection defection : defectionList) {
+                if (defection.getSeverityLevel() != null && defection.getRepairSuggestion() != null) {
+                    defectionService.updateById(defection);
+                }
+            }
+
+            return Result.success("AI分析完成", analysisResult);
+
+        }finally {
+            
+        }
     }
 
 

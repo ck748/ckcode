@@ -1,3 +1,4 @@
+<!-- 历史检测 -->
 <template>
   <div class="history-page">
     <!-- 时间段选择区域 -->
@@ -22,83 +23,88 @@
     </div>
 
     <!-- 数据表格区域 -->
-    <div class="table-section">
-      <el-table :data="tableData" class="custom-table" style="width: 100%">
-        <!-- 编号列 -->
-        <el-table-column type="index" label="编号" width="80" align="center">
-          <template slot-scope="scope">
-            <span class="index-badge">{{ scope.$index + 1 + (page - 1) * pageSize }}</span>
-          </template>
-        </el-table-column>
-        
-        <!-- 图片列 -->
-        <el-table-column label="图片" width="120" align="center">
-          <template slot-scope="scope">
-            <div class="image-preview" @click="handleImageClick(scope.row.imgBase64)">
-              <img 
-                :src="getBase64ImageUrl(scope.row.imgBase64)" 
-                class="table-image"
-                alt="检测图片"
-              />
-              <div class="image-hover">
-                <i class="el-icon-zoom-in"></i>
+    <div class="table-container">
+      <div class="table-wrapper">
+        <el-table 
+          :data="tableData" 
+          class="custom-table"
+          style="width: 100%"
+          :row-style="{height: '45px'}"
+          :header-row-style="{height: '40px'}"
+        >
+          <!-- 编号列 -->
+          <el-table-column type="index" label="编号" width="70" align="center">
+            <template slot-scope="scope">
+              <span class="index-badge">{{ scope.$index + 1 + (page - 1) * pageSize }}</span>
+            </template>
+          </el-table-column>
+          
+          <!-- 图片列 -->
+          <el-table-column label="图片" width="100" align="center">
+            <template slot-scope="scope">
+              <div class="image-preview" @click="handleImageClick(scope.row.imgBase64)">
+                <img 
+                  :src="getBase64ImageUrl(scope.row.imgBase64)" 
+                  class="table-image"
+                  alt="检测图片"
+                />
+                <div class="image-hover">
+                  <i class="el-icon-zoom-in"></i>
+                </div>
               </div>
-            </div>
-          </template>
-        </el-table-column>
-        
-        <!-- 检测时间列 -->
-        <el-table-column prop="time" label="检测时间" width="200" align="center" sortable>
-          <template slot-scope="scope">
-            <div class="time-display">
-              <i class="el-icon-time time-icon"></i>
-              <span class="time-text">{{ scope.row.time }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        
-        <!-- 工单号列 -->
-        <el-table-column prop="workOrderId" label="工单号" width="120" align="center">
-          <template slot-scope="scope">
-            <el-tag class="order-tag">{{ scope.row.workOrderId }}</el-tag>
-          </template>
-        </el-table-column>
-        
-        <!-- 缺陷数列 -->
-        <el-table-column prop="defectionsSum" label="缺陷数" width="100" align="center" sortable>
-          <template slot-scope="scope">
-            <div class="defect-count" :class="getDefectCountClass(scope.row.defectionsSum)">
-              {{ scope.row.defectionsSum }}
-            </div>
-          </template>
-        </el-table-column>
-        
-        <!-- 操作列 -->
-        <el-table-column label="操作" width="180" align="center">
-          <template slot-scope="scope">
-            <div class="action-buttons">
-              <el-button 
-                size="mini" 
-                type="primary" 
-                icon="el-icon-view" 
-                @click="handleShow(scope.row)"
-                class="view-button"
-              >
-                查看
-              </el-button>
-              <el-button 
-                size="mini" 
-                type="danger" 
-                icon="el-icon-delete" 
-                @click="handleDelete(scope.row)"
-                class="delete-button"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+            </template>
+          </el-table-column>
+          
+          <!-- 检测时间列 -->
+          <el-table-column prop="time" label="检测时间" width="160" align="center" sortable>
+            <template slot-scope="scope">
+              <div class="time-display">
+                <span class="time-text">{{ scope.row.time }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          
+          <!-- 工单号列 -->
+          <el-table-column prop="workOrderId" label="工单号" width="100" align="center">
+            <template slot-scope="scope">
+              <el-tag class="order-tag">{{ scope.row.workOrderId }}</el-tag>
+            </template>
+          </el-table-column>
+          
+          <!-- 缺陷数列 -->
+          <el-table-column prop="defectionsSum" label="缺陷数" width="80" align="center" sortable>
+            <template slot-scope="scope">
+              <div class="defect-count" :class="getDefectCountClass(scope.row.defectionsSum)">
+                {{ scope.row.defectionsSum }}
+              </div>
+            </template>
+          </el-table-column>
+          
+          <!-- 操作列 -->
+          <el-table-column label="操作" width="140" align="center">
+            <template slot-scope="scope">
+              <div class="action-buttons">
+                <el-button 
+                  size="mini" 
+                  type="primary" 
+                  @click="handleShow(scope.row)"
+                  class="view-button"
+                >
+                  查看
+                </el-button>
+                <el-button 
+                  size="mini" 
+                  type="danger" 
+                  @click="handleDelete(scope.row)"
+                  class="delete-button"
+                >
+                  删除
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
 
       <!-- 详细信息弹窗 -->
       <el-dialog :visible.sync="dialogVisible" title="详细信息" width="65%" class="detail-dialog">
@@ -141,10 +147,19 @@
         </el-card>
       </el-dialog>
 
-      <!-- 图片放大弹窗 -->
-      <el-dialog :visible.sync="dialogVisibleimg" title="放大的图片" width="35%" class="image-dialog">
+      <!-- 图片放大弹窗 - 修改为更大尺寸 -->
+      <el-dialog 
+        :visible.sync="dialogVisibleimg" 
+        title="放大的图片" 
+        width="80%" 
+        class="image-dialog"
+        :center="true"
+      >
         <div class="image-modal">
           <img :src="getBase64ImageUrl(dialogImageUrl)" class="enlarged-image" alt="放大图片"/>
+        </div>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisibleimg = false" size="small">关闭</el-button>
         </div>
       </el-dialog>
 
@@ -403,60 +418,90 @@ export default {
 
 <style scoped>
 .history-page {
-  padding: 20px;
+  padding: 15px;
   background: #f8f9fa;
-  min-height: 100vh;
+  min-height: calc(100vh - 30px);
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 时间段选择区域 */
 .time-range-section {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .time-range-container {
   display: flex;
   align-items: center;
   background: white;
-  padding: 15px 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 12px 15px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid #eaeaea;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .time-label {
   font-weight: 600;
   color: #303133;
-  margin-right: 15px;
-  font-size: 14px;
+  margin-right: 12px;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .date-picker-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: nowrap;
+  flex: 1;
 }
 
 .custom-date-picker {
-  width: 280px;
+  width: 240px;
+  flex-shrink: 0;
 }
 
 .confirm-btn {
-  height: 32px;
-  border-radius: 6px;
+  height: 30px;
+  border-radius: 4px;
   font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 12px;
+  padding: 0 12px;
 }
 
-/* 表格区域 */
-.table-section {
+/* 表格容器 */
+.table-container {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid #eaeaea;
   overflow: hidden;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+}
+
+.table-wrapper {
+  width: 100%;
+  flex: 1;
+  overflow: auto;
+  max-height: calc(100vh - 250px);
 }
 
 .custom-table {
   width: 100%;
+  min-width: 700px;
 }
 
 .custom-table::before {
@@ -472,25 +517,39 @@ export default {
   background: #fafbfc !important;
   color: #303133;
   font-weight: 600;
-  border-bottom: 2px solid #eaeaea;
+  border-bottom: 1px solid #eaeaea;
+  white-space: nowrap;
+  height: 40px !important;
+  padding: 0 !important;
 }
 
 :deep(.el-table td) {
   border-bottom: 1px solid #f0f0f0;
+  white-space: nowrap;
+  height: 45px !important;
+  padding: 0 !important;
+}
+
+:deep(.el-table__body) {
+  width: 100% !important;
+}
+
+:deep(.el-table__header) {
+  width: 100% !important;
 }
 
 /* 编号样式 */
 .index-badge {
   display: inline-block;
-  width: 28px;
-  height: 28px;
-  line-height: 28px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
   text-align: center;
   background: #f0f2f5;
-  border-radius: 6px;
+  border-radius: 4px;
   color: #606266;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 /* 图片预览样式 */
@@ -498,20 +557,20 @@ export default {
   position: relative;
   display: inline-block;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 4px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .image-preview:hover {
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 .table-image {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid #eaeaea;
   background: #f8f9fa;
 }
@@ -527,7 +586,7 @@ export default {
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .image-preview:hover .image-hover {
@@ -536,7 +595,7 @@ export default {
 
 .image-hover i {
   color: white;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 /* 工单号标签 */
@@ -545,7 +604,10 @@ export default {
   color: #409EFF;
   border: 1px solid #d9ecff;
   font-weight: 500;
-  padding: 4px 8px;
+  padding: 2px 6px;
+  font-size: 11px;
+  height: 22px;
+  line-height: 18px;
 }
 
 /* 检测时间样式 */
@@ -553,14 +615,9 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   color: #606266;
-  font-size: 14px;
-}
-
-.time-icon {
-  color: #909399;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .time-text {
@@ -570,11 +627,11 @@ export default {
 /* 缺陷数样式 */
 .defect-count {
   display: inline-block;
-  padding: 6px 12px;
-  border-radius: 12px;
+  padding: 4px 8px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 12px;
-  min-width: 40px;
+  font-size: 11px;
+  min-width: 30px;
 }
 
 .defect-zero {
@@ -598,15 +655,17 @@ export default {
 /* 操作按钮 */
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
 }
 
 .view-button, .delete-button {
-  border-radius: 6px;
+  border-radius: 4px;
   font-weight: 500;
-  min-width: 60px;
-  padding: 7px 12px;
+  min-width: 50px;
+  padding: 5px 8px;
+  font-size: 11px;
+  height: 26px;
 }
 
 .view-button {
@@ -621,12 +680,12 @@ export default {
 
 /* 详细信息弹窗 */
 .detail-dialog {
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .detail-dialog .el-dialog__header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px 12px 0 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .detail-dialog .el-dialog__title {
@@ -641,8 +700,8 @@ export default {
 
 .detail-content {
   display: flex;
-  gap: 40px;
-  padding: 10px;
+  gap: 30px;
+  padding: 8px;
 }
 
 .image-area {
@@ -650,11 +709,11 @@ export default {
 }
 
 .detail-image {
-  width: 400px;
-  height: 400px;
+  width: 350px;
+  height: 350px;
   object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   background: #f8f9fa;
 }
 
@@ -662,63 +721,100 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .info-label {
   font-weight: 600;
   color: #606266;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .info-value {
   color: #303133;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-/* 图片放大弹窗 */
+/* 图片放大弹窗 - 修改为更大尺寸并居中 */
 .image-dialog {
   text-align: center;
 }
 
+:deep(.image-dialog .el-dialog) {
+  width: 80% !important;
+  max-width: 1200px;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  margin-top: 10vh !important;
+}
+
+:deep(.image-dialog .el-dialog__body) {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
 .image-modal {
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 10px;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
 }
 
 .enlarged-image {
-  max-width: 100%;
-  max-height: 500px;
+  max-width: 90%;
+  max-height: 90%;
+  width: auto;
+  height: auto;
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   background: #f8f9fa;
+  object-fit: contain;
+}
+
+.dialog-footer {
+  text-align: center;
+  padding: 10px 20px 20px;
 }
 
 /* 分页样式 */
 .pagination-wrapper {
-  padding: 20px;
+  padding: 15px;
   border-top: 1px solid #eaeaea;
   background: #fafbfc;
+  width: 100%;
+  flex-shrink: 0;
+  min-height: 60px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .custom-pagination {
   justify-content: center;
+  width: 100%;
 }
 
 .custom-pagination .el-pagination__total,
 .custom-pagination .el-pagination__jump {
   color: #606266;
+  font-size: 12px;
 }
 
 /* 表格行悬停效果 */
@@ -732,19 +828,48 @@ export default {
 
 /* 让表格内容铺满整个宽度 */
 :deep(.el-table) {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 :deep(.el-table .cell) {
-  padding: 12px 8px;
+  padding: 8px 6px !important;
+  line-height: 1.3;
 }
 
-/* 确保表格占据整个容器宽度 */
-:deep(.el-table__body) {
-  width: 100% !important;
-}
-
-:deep(.el-table__header) {
-  width: 100% !important;
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .date-picker-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .custom-date-picker {
+    width: 100%;
+  }
+  
+  .time-range-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .time-label {
+    margin-bottom: 8px;
+  }
+  
+  .table-wrapper {
+    max-height: calc(100vh - 300px);
+  }
+  
+  :deep(.image-dialog .el-dialog) {
+    width: 95% !important;
+    height: 85vh;
+    margin-top: 7.5vh !important;
+  }
+  
+  .enlarged-image {
+    max-width: 95%;
+    max-height: 95%;
+  }
 }
 </style>

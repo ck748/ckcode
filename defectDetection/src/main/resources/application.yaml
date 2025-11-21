@@ -30,3 +30,10 @@ logging:
   level:
     org:
       springframework: INFO
+
+# AI模型配置 - 阿里云通义千问
+ai:
+  api:
+    url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+    key: sk-931696cf528645f280b7c3aa5684b8e4  # 请替换为你的通义千问API Key
+  model: qwen-turbo  # 可选: qwen-turbo(快速), qwen-plus(平衡), qwen-max(高级)

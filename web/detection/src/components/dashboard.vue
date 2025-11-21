@@ -1,3 +1,4 @@
+<!-- 概要信息 -->
 <template>
   <div class="monitoring-dashboard">
     <!-- 顶部标题区域 -->
