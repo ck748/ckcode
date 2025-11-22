@@ -42,6 +42,10 @@
               <i class="el-icon-tickets menu-sub-icon"></i>
               <span>历史检测</span>
             </el-menu-item>
+            <el-menu-item index="/annotation" class="submenu-item">
+              <i class="el-icon-edit-outline menu-sub-icon"></i>
+              <span>数据标注</span>
+            </el-menu-item>
             <el-menu-item index="/charts" class="submenu-item">
               <i class="el-icon-data-analysis menu-sub-icon"></i>
               <span>检测报表</span>

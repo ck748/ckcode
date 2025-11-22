@@ -26,4 +26,6 @@ public class Defection {
     private Integer categoryId;
     private Integer severityLevel;  // 严重程度等级 1-5
     private String repairSuggestion; // 修复建议
+    private String dataSource; // 数据来源：detection-AI检测, manual-人工标注
+    private Integer annotationId; // 关联的标注数据ID
 }

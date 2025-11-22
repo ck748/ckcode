@@ -27,6 +27,7 @@ const routes = [
             { path: '/picture_detection', name: 'Picture_detection', meta: { name: '图片检测' }, component: () => import('../components/picture_detection.vue') },
             { path: '/dashboard', name: 'Dashboard', meta: { name: '概要信息' }, component: () => import('../components/dashboard.vue') },
             { path: '/info', name: 'Info', meta: { name: '历史检测' }, component: () => import('../components/info.vue') },
+            { path: '/annotation', name: 'Annotation', meta: { name: '数据标注' }, component: () => import('../components/annotation.vue') },
             { path: '/charts', name: 'Charts', meta: { name: '检测报表' }, component: () => import('../components/charts.vue') },
             { path: '/warning', name: 'Warning', meta: { name: '异常管理' }, component: () => import('../components/warning.vue') },
             { path: '/log', name: 'Log', meta: { name: '日志管理' }, component: () => import('../components/log.vue') },

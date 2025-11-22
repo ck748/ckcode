@@ -138,7 +138,9 @@ CREATE TABLE detect_log
     defections_sum TINYINT(3) DEFAULT (0),
     time DATETIME,
     work_order_id  INTEGER(12),
-    storage_path   VARCHAR(255)
+    storage_path   VARCHAR(255),
+    data_source    VARCHAR(32) DEFAULT 'detection',
+    raw_image_id   INTEGER(12)
 );
 
 -- 工单表

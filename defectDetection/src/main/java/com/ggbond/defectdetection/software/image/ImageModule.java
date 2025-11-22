@@ -86,7 +86,7 @@ public class ImageModule {
 
     //接收图像
     @PostMapping("/img")
-    public void imgProcess(@RequestPart("img") MultipartFile img) throws Exception {
+    public Result imgProcess(@RequestPart("img") MultipartFile img) throws Exception {
         System.out.println("接收图像");
 
         /*
@@ -100,7 +100,16 @@ public class ImageModule {
         String imgBase64 = ImgUtil.convertToJPGBase64(img);
 
         //模型分析
-        res=detectModel.detectOne(imgBase64);
+        try {
+            res = detectModel.detectOne(imgBase64);
+        } catch (Exception e) {
+            log.error("模型检测失败，可能是Python预测服务未启动(8090端口): {}", e.getMessage());
+            // 如果模型检测失败，返回原图和空的检测结果
+            res = new DetectResDto();
+            res.setImgBase64(imgBase64);
+            res.setDefections(new java.util.ArrayList<>());
+            res.setDefectionsSum(0);
+        }
 
         //存储新的检测信息
         //1.获取工单号
@@ -127,6 +136,7 @@ public class ImageModule {
         Integer detectId=detectLog1.getId();
 
         //3.2 存储缺陷信息
+        int actualDefectionCount = 0;
         for(Defection defection:res.getDefections()){
 
             String category=defection.getCategory();
@@ -142,7 +152,16 @@ public class ImageModule {
             // 在 defection.setDetectId(detectId); 之后添加:
             severityService.evaluateDefection(defection);
             defectionService.save(defection);
+            actualDefectionCount++;
 
+        }
+        
+        // 3.3 更新detect_log的实际缺陷数（防止保存时计算错误）
+        if(actualDefectionCount != defectionsSum) {
+            log.warn("检测到缺陷数不一致: 保存的detect_log.defections_sum={}, 实际保存的缺陷数={}, 进行修正", 
+                defectionsSum, actualDefectionCount);
+            detectLog1.setDefectionsSum(actualDefectionCount);
+            detectLogService.updateById(detectLog1);
         }
 
         //3.2 工单进度加1,更新到新工单
@@ -157,8 +176,11 @@ public class ImageModule {
         realtimeInterface.getDetectImagePanel().updateTextLabel(workOrderId,CommonResource.getCurrentNum(),CommonResource.getDetectSum());
         realtimeInterface.updateCharts(dataModule.getDataMaps());
 
-        //将最新结果发送至web端
+        //将最新结果发送至web端(通过SSE)
         new Thread(sseUtil.sendMessageToAll(String.valueOf(Result.IMAGE_CODE),res),"发送检测结果").start();
+        
+        //同时直接返回结果给调用方
+        return Result.success("检测完成", res);
     }
 
 

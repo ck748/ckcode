@@ -81,7 +81,7 @@
           </el-table-column>
           
           <!-- 操作列 -->
-          <el-table-column label="操作" width="140" align="center">
+          <el-table-column label="操作" width="220" align="center">
             <template slot-scope="scope">
               <div class="action-buttons">
                 <el-button 
@@ -91,6 +91,16 @@
                   class="view-button"
                 >
                   查看
+                </el-button>
+                <el-button 
+                  size="mini" 
+                  type="success" 
+                  icon="el-icon-magic-stick"
+                  @click="handleAIAnalysis(scope.row)"
+                  class="ai-button"
+                  :loading="aiLoading === scope.row.id"
+                >
+                  AI分析
                 </el-button>
                 <el-button 
                   size="mini" 
@@ -142,6 +152,22 @@
                 <span class="info-label">缺陷类别编号：</span>
                 <span class="info-value">{{ tableDataShow.categoryId || '0' }}</span>
               </div>
+              <div class="info-item" v-if="tableDataShow.severityLevel">
+                <span class="info-label">严重等级：</span>
+                <el-tag 
+                  :type="getSeverityTagType(tableDataShow.severityLevel)" 
+                  size="medium"
+                  class="severity-tag"
+                >
+                  {{ tableDataShow.severityLevel }}级
+                </el-tag>
+              </div>
+              <div class="info-item full-width" v-if="tableDataShow.repairSuggestion">
+                <span class="info-label">修复建议：</span>
+                <div class="info-value suggestion-box">
+                  {{ tableDataShow.repairSuggestion }}
+                </div>
+              </div>
             </div>
           </div>
         </el-card>
@@ -160,6 +186,60 @@
         </div>
         <div slot="footer" class="dialog-footer">
           <el-button @click="dialogVisibleimg = false" size="small">关闭</el-button>
+        </div>
+      </el-dialog>
+
+      <!-- AI分析结果弹窗 -->
+      <el-dialog 
+        :visible.sync="aiDialogVisible" 
+        title="AI缺陷分析报告" 
+        width="70%" 
+        class="ai-dialog"
+      >
+        <div v-if="aiAnalyzing" class="ai-loading">
+          <i class="el-icon-loading loading-icon"></i>
+          <p>AI正在分析中，请稍候...</p>
+        </div>
+        <div v-else-if="aiResult" class="ai-result">
+          <!-- 整体评估 -->
+          <el-card class="overall-card" shadow="hover">
+            <div slot="header" class="overall-header">
+              <i class="el-icon-data-analysis"></i>
+              <span>整体评估</span>
+            </div>
+            <p class="overall-text">{{ aiResult.overallAssessment }}</p>
+          </el-card>
+
+          <!-- 缺陷详细分析 -->
+          <div class="defections-list" v-if="aiResult.defections && aiResult.defections.length > 0">
+            <h3 class="list-title">缺陷详细分析</h3>
+            <el-card 
+              v-for="(defection, index) in aiResult.defections" 
+              :key="index" 
+              class="defection-card"
+              shadow="hover"
+            >
+              <div class="defection-header">
+                <span class="defection-index">缺陷 {{ index + 1 }}</span>
+                <el-tag 
+                  :type="getSeverityTagType(defection.severityLevel)"
+                  class="severity-tag"
+                >
+                  {{ defection.severityLevel }}级严重
+                </el-tag>
+              </div>
+              <div class="defection-details">
+                <div class="detail-row" v-if="defection.category">
+                  <span class="detail-label">缺陷类型：</span>
+                  <span class="detail-value">{{ defection.category }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">修复建议：</span>
+                  <span class="detail-value suggestion">{{ defection.repairSuggestion }}</span>
+                </div>
+              </div>
+            </el-card>
+          </div>
         </div>
       </el-dialog>
 
@@ -250,7 +330,11 @@ export default {
       dateL:null,
       dateR:null,
       imagBase64:null,
-      selectedImage : null
+      selectedImage : null,
+      aiDialogVisible: false,
+      aiAnalyzing: false,
+      aiResult: null,
+      aiLoading: null  // 当前AI分析的记录ID
     }
   },
   mounted() {
@@ -411,6 +495,54 @@ export default {
     handleCurrentChange(val) {
       this.page = val;
       this.fetchData();
+    },
+    getSeverityTagType(level) {
+      if (level <= 2) return 'success';
+      if (level <= 3) return 'warning';
+      return 'danger';
+    },
+    handleAIAnalysis(row) {
+      this.aiLoading = row.id;
+      this.aiDialogVisible = true;
+      this.aiAnalyzing = true;
+      this.aiResult = null;
+
+      axios.post('api/detectInfo/ai/analyze', null, {
+        params: {
+          detectId: row.id
+        }
+      })
+      .then(response => {
+        console.log('AI分析结果:', response.data);
+        this.aiAnalyzing = false;
+        this.aiLoading = null;
+        
+        if (response.data.code === 200) {
+          this.aiResult = response.data.data;
+          this.$message({
+            type: 'success',
+            message: 'AI分析完成'
+          });
+          // 刷新当前页面数据，以显示更新后的信息
+          this.fetchData();
+        } else {
+          this.$message({
+            type: 'error',
+            message: response.data.msg || 'AI分析失败'
+          });
+          this.aiDialogVisible = false;
+        }
+      })
+      .catch(error => {
+        console.error('AI分析请求失败:', error);
+        this.aiAnalyzing = false;
+        this.aiLoading = null;
+        this.$message({
+          type: 'error',
+          message: 'AI分析请求失败，请稍后重试'
+        });
+        this.aiDialogVisible = false;
+      });
     },
   },
 };
@@ -659,7 +791,7 @@ export default {
   justify-content: center;
 }
 
-.view-button, .delete-button {
+.view-button, .delete-button, .ai-button {
   border-radius: 4px;
   font-weight: 500;
   min-width: 50px;
@@ -671,6 +803,17 @@ export default {
 .view-button {
   background: #409EFF;
   border-color: #409EFF;
+}
+
+.ai-button {
+  background: #67C23A;
+  border-color: #67C23A;
+  color: white;
+}
+
+.ai-button:hover {
+  background: #85ce61;
+  border-color: #85ce61;
 }
 
 .delete-button {
@@ -742,6 +885,28 @@ export default {
   color: #303133;
   font-weight: 600;
   font-size: 13px;
+}
+
+.info-item.full-width {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.severity-tag {
+  font-weight: 600;
+}
+
+.suggestion-box {
+  width: 100%;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  border-left: 3px solid #409EFF;
+  margin-top: 8px;
+  line-height: 1.6;
+  font-size: 12px;
+  color: #606266;
+  font-weight: normal;
 }
 
 /* 图片放大弹窗 - 修改为更大尺寸并居中 */
@@ -834,6 +999,135 @@ export default {
 :deep(.el-table .cell) {
   padding: 8px 6px !important;
   line-height: 1.3;
+}
+
+/* AI分析弹窗样式 */
+.ai-dialog {
+  border-radius: 12px;
+}
+
+.ai-loading {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-icon {
+  font-size: 48px;
+  color: #409EFF;
+  margin-bottom: 20px;
+}
+
+.ai-loading p {
+  font-size: 16px;
+  color: #606266;
+}
+
+.ai-result {
+  padding: 10px;
+}
+
+.overall-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  border: 1px solid #e4e7ed;
+}
+
+.overall-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #303133;
+}
+
+.overall-header i {
+  font-size: 20px;
+  color: #409EFF;
+}
+
+.overall-text {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #606266;
+  margin: 0;
+  padding: 12px 0;
+}
+
+.list-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 16px;
+  padding-left: 12px;
+  border-left: 4px solid #409EFF;
+}
+
+.defections-list {
+  margin-top: 20px;
+}
+
+.defection-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid #e4e7ed;
+  transition: all 0.3s ease;
+}
+
+.defection-card:hover {
+  border-color: #409EFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+}
+
+.defection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.defection-index {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.defection-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #606266;
+  font-size: 14px;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  color: #303133;
+  font-size: 14px;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.detail-value.suggestion {
+  color: #606266;
+  background: #f5f7fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #409EFF;
 }
 
 /* 响应式设计 */

@@ -4,6 +4,11 @@ spring:
     password: "123456"
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/defect_detection?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
   main:
     banner-mode: off
   devtools:
@@ -31,9 +36,18 @@ logging:
     org:
       springframework: INFO
 
-# AI模型配置 - 阿里云通义千问
+# AI模型配置
 ai:
-  api:
+  # 模式选择: local(本地Ollama) 或 cloud(阿里云)
+  mode: local
+  
+  # 本地Ollama配置
+  local:
+    url: http://localhost:11434/v1/chat/completions
+    model: qwen2.5:7b  # 推荐模型: qwen2.5:7b, qwen2.5:14b, llama3.1:8b
+  
+  # 阿里云通义千问配置（备用）
+  cloud:
     url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
-    key: sk-931696cf528645f280b7c3aa5684b8e4  # 请替换为你的通义千问API Key
-  model: qwen-turbo  # 可选: qwen-turbo(快速), qwen-plus(平衡), qwen-max(高级)
+    key: sk-931696cf528645f280b7c3aa5684b8e4
+    model: qwen-turbo  # 可选: qwen-turbo(快速), qwen-plus(平衡), qwen-max(高级)

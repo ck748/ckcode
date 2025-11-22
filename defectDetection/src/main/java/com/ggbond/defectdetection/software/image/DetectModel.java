@@ -104,10 +104,12 @@ public class DetectModel {
     public DetectResDto detectOne(String imgBase64){
 
         String targetUrl="http://"+ip+":"+port+"/detect";
+        log.info("开始调用Python预测服务: {}", targetUrl);
         //发送给处理端
         Map parames=new HashMap<String,String>();
 
         parames.put(head,imgBase64);
+        log.info("图片Base64长度: {}", imgBase64 != null ? imgBase64.length() : 0);
 
         String resJson="";
         DetectResDto res=new DetectResDto();
@@ -119,56 +121,27 @@ public class DetectModel {
 
         //模型预测
         if(true){
-            resJson= HttpUtil.post(targetUrl,parames);
-//            log.info("res:"+resJson);
-            //读取结果
-//            log.info("结果json如下:"+resJson);
-            JSONObject jsonObject=JSONObject.parseObject(resJson);
-
-            res.setImgBase64(jsonObject.getString("imgBase64"));
-
-            String defectionsStr=jsonObject.getString("defections");
-            List<Defection> defections= JSON.parseArray(defectionsStr,Defection.class);
-            res.setDefections(defections);
-        }else{
-            File folder=new File("src/main/resources/testImg/JPEGImages");
-            File[] files=folder.listFiles();
-            Random random = new Random();
-            assert files != null;
-            int randomIndex = random.nextInt(files.length);
-            File img=files[randomIndex];
             try {
-                imgBase64=ImgUtil.imageToBase64ByPath(img.getAbsolutePath());
-            } catch (IOException e) {
-                e.printStackTrace();
+                resJson= HttpUtil.post(targetUrl,parames);
+                log.info("收到Python服务响应: {}", resJson != null ? resJson.substring(0, Math.min(200, resJson.length())) : "null");
+                //读取结果
+                JSONObject jsonObject=JSONObject.parseObject(resJson);
+
+                res.setImgBase64(jsonObject.getString("imgBase64"));
+
+                String defectionsStr=jsonObject.getString("defections");
+                List<Defection> defections= JSON.parseArray(defectionsStr,Defection.class);
+                res.setDefections(defections);
+                log.info("检测完成，发现缺陷数量: {}", defections != null ? defections.size() : 0);
+            } catch (Exception e) {
+                log.error("调用Python预测服务失败: {}", e.getMessage(), e);
+                throw e;  // 重新抛出异常，由上层捕获
             }
+        }else{
+            // 测试模式已禁用，不应该执行到这里
+            log.warn("检测模式异常，返回空结果");
             res.setImgBase64(imgBase64);
-
-            List<Defection> defectionList=new ArrayList<>();
-
-            String[] category={"划痕","凹陷","突出","抛光"};
-
-            if(random.nextBoolean()) {
-
-                int defectiveSum = random.nextInt(5);
-                for (int i = 0; i < defectiveSum; i++) {
-                    Defection defection = new Defection(null,
-                            random.nextDouble(1.),
-                            random.nextDouble(1),
-                            random.nextDouble(1),
-                            random.nextDouble(1),
-                            random.nextDouble(1),
-                            null,
-                            category[random.nextInt(4)],
-                            null,
-                            null,
-                            null
-                    );
-                    defectionList.add(defection);
-                }
-            }
-
-            res.setDefections(defectionList);
+            res.setDefections(new ArrayList<>());
         }
         res.setDefectionsSum(res.getDefections().size());
 

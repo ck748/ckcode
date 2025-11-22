@@ -21,14 +21,25 @@ import java.util.Map;
 @Slf4j
 public class AIAnalysisService {
 
-    @Value("${ai.api.url:https://api.openai.com/v1/chat/completions}")
-    private String aiApiUrl;
+    @Value("${ai.mode:local}")
+    private String aiMode;
 
-    @Value("${ai.api.key:}")
-    private String aiApiKey;
+    // 本地Ollama配置
+    @Value("${ai.local.url:http://localhost:11434/v1/chat/completions}")
+    private String localUrl;
+    
+    @Value("${ai.local.model:qwen2.5:7b}")
+    private String localModel;
 
-    @Value("${ai.model:gpt-3.5-turbo}")
-    private String aiModel;
+    // 云端API配置
+    @Value("${ai.cloud.url:https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions}")
+    private String cloudUrl;
+    
+    @Value("${ai.cloud.key:}")
+    private String cloudApiKey;
+    
+    @Value("${ai.cloud.model:qwen-turbo}")
+    private String cloudModel;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -99,16 +110,39 @@ public class AIAnalysisService {
      * 调用AI API
      */
     private String callAIAPI(String prompt) {
-        if (aiApiKey == null || aiApiKey.isEmpty()) {
-            throw new RuntimeException("AI API Key未配置");
+        // 根据模式选择URL和模型
+        String apiUrl;
+        String model;
+        boolean needAuth;
+        
+        if ("local".equalsIgnoreCase(aiMode)) {
+            // 本地Ollama模式
+            apiUrl = localUrl;
+            model = localModel;
+            needAuth = false;
+            log.info("使用本地Ollama模型: {}", model);
+        } else {
+            // 云端API模式
+            apiUrl = cloudUrl;
+            model = cloudModel;
+            needAuth = true;
+            
+            if (cloudApiKey == null || cloudApiKey.isEmpty()) {
+                throw new RuntimeException("AI API Key未配置");
+            }
+            log.info("使用云端AI模型: {}", model);
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(aiApiKey);
+        
+        // 只有云端模式需要认证
+        if (needAuth) {
+            headers.setBearerAuth(cloudApiKey);
+        }
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", aiModel);
+        requestBody.put("model", model);
         requestBody.put("messages", new Object[]{
             Map.of("role", "user", "content", prompt)
         });
@@ -119,7 +153,7 @@ public class AIAnalysisService {
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(
-                aiApiUrl,
+                apiUrl,
                 HttpMethod.POST,
                 entity,
                 String.class
@@ -187,7 +221,6 @@ public class AIAnalysisService {
                 maxLevel = defection.getSeverityLevel();
             }
         }
-        
         String overallAssessment;
         if (maxLevel <= 2) {
             overallAssessment = "产品存在轻微缺陷，可以进行简单修复处理。建议在出厂前进行简单修复，整体质量可控。";

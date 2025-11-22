@@ -20,4 +20,6 @@ public class DetectLog {
     private LocalDateTime time;
     private Integer workOrderId;
     private String storagePath;
+    private String dataSource; // 数据来源：detection-检测, annotation-标注
+    private Integer rawImageId; // 关联的原始图片ID
 }

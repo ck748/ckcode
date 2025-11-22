@@ -137,41 +137,58 @@ export default {
 
     },
     Test() {
+      if (!this.image1) {
+        this.$message({
+          type: "warning",
+          message: "请先选择图片"
+        });
+        return;
+      }
       this.fetchBackendImage()
       this.loading.listloading = true
     },
     fetchBackendImage() {
       const formData = new FormData();
-      formData.append('image', this.image1);
+      formData.append('img', this.image1); // 参数名改为img，与后端一致
 
-      fetch('http://192.168.17.222:8080/detect', {         //
+      fetch('/api/detect/img', {  // 使用代理路径
         method: 'POST',
         body: formData,
       })
           .then((response) => {
-            if (response.code === 200) {
-              console.log("已经接到图片");
+            if (!response.ok) {
+              throw new Error('上传失败');
+            }
+            return response.json(); // 解析JSON响应
+          })
+          .then((data) => {
+            console.log("收到检测结果:", data);
+            if (data.code === 200 && data.data) {
+              // 显示检测结果
+              this.displayBase64Image(data.data.imgBase64);
+              this.tableData = data.data.defections || [];
+              this.tableData.forEach((item, index) => {
+                item.number = index + 1;
+              });
               this.$message({
                 type:"success",
                 message: "检测完成"
               });
-              this.loading.listloading = false;
-              return response.json(); // 获取 JSON 格式的响应数据
             } else {
-              throw new Error('未能获取后端图片');
+              this.$message({
+                type:"error",
+                message: data.msg || "检测失败"
+              });
             }
-          })
-          .then((responseData) => {
-            console.log(responseData);
-            this.displayBase64Image(responseData.data.imgBase64);
-            this.tableData=responseData.data.defections;
-            this.tableData.forEach((item, index) => {
-              item.number = index + 1;
-            });
-            console.log("数字："+this.tableData.number);
+            this.loading.listloading = false;
           })
           .catch((error) => {
-            console.error('未能获取后端图片', error);
+            console.error('检测失败', error);
+            this.$message({
+              type:"error",
+              message: "检测失败: " + error.message
+            });
+            this.loading.listloading = false;
           });
     },
     displayBase64Image(base64String) {
