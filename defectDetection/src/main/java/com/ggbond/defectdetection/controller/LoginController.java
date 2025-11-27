@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @ResponseBody
 @RequestMapping("/login")
-@CrossOrigin("*")
 public class LoginController {
 
     @Autowired

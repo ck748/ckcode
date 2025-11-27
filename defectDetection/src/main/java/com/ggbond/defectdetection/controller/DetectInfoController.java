@@ -35,7 +35,7 @@ import java.util.*;
 @Slf4j
 @ResponseBody
 @RequestMapping("/detectInfo")
-@CrossOrigin("*")
+
 public class DetectInfoController {
 
     @Autowired

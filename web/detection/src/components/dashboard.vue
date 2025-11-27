@@ -205,6 +205,8 @@
 </template>
 
 <script>
+import sseManager from '@/utils/sseManager';
+
 export default {
   data() {
     return {
@@ -218,81 +220,74 @@ export default {
         operation: null,
         opTime: null
       }],
-      eventSourcePicture: null
+      isConnected: false // 连接状态
+    }
+  },
+  computed: {
+    // 模拟 eventSourcePicture 用于显示连接状态
+    eventSourcePicture() {
+      return {
+        readyState: this.isConnected ? 1 : 0
+      };
     }
   },
   mounted() {
-    this.initSSEConnection();
+    // 订阅全局SSE
+    sseManager.subscribe('dashboard', this.handleSSEMessage);
   },
   beforeDestroy() {
-    if (this.eventSourcePicture) {
-      this.eventSourcePicture.close();
-      console.log('SSE连接已关闭');
-    }
+    // 取消订阅
+    sseManager.unsubscribe('dashboard');
   },
   methods: {
-    initSSEConnection() {
-      if (this.eventSourcePicture) {
-        this.eventSourcePicture.close();
-      }
-      
-      this.eventSourcePicture = new EventSource('api/dashboard/pictureInfo', { retry: 20000 });
-      
-      this.eventSourcePicture.onopen = (event) => {
-        console.log('✅ SSE连接成功');
-        this.$message.success('实时连接已建立');
-      };
-      
-      this.eventSourcePicture.onerror = (error) => {
-        console.error('❌ SSE连接错误:', error);
-        // this.$message.error('连接异常，正在重连...');
-      };
-      
-      this.eventSourcePicture.onmessage = event => {
-        try {
-          const data = JSON.parse(event.data);
-          const imageBase64 = data.imgBase64;
-          
-          if (imageBase64 !== null && imageBase64 !== undefined && imageBase64 !== '') {
-            this.imageData = imageBase64;
-            this.defectList = data.defections || [];
-            console.log('📷 收到图片数据，缺陷数:', this.defectList.length);
-          }
-          
-          if (data.runTime !== null && data.runTime !== undefined) {
-            this.$nextTick(() => {
-              this.statsData = [{
-                runTime: this.formatRuntime(data.runTime),
-                defectionsSum: data.defectionsSum,
-                defectRate: data.defectRate ? (data.defectRate * 100).toFixed(2) + '%' : '0%',
-                highestOccurrenceDefect: data.highestOccurrenceDefect || '暂无',
-                operation: null,
-                opTime: null
-              }];
-              
-              if (data.latestOperations && Array.isArray(data.latestOperations)) {
-                let operations = data.latestOperations.map(op => ({
-                  runTime: null,
-                  defectionsSum: null,
-                  defectRate: null,
-                  highestOccurrenceDefect: null,
-                  operation: op.op || op.operation || '未知操作',
-                  opTime: op.time || op.opTime || '-'
-                }));
-                this.statsData = this.statsData.concat(operations);
-              }
-              
-              this.statsData = this.statsData.filter(obj => 
-                Object.values(obj).some(value => value !== null && value !== undefined)
-              );
-              
-              console.log('📊 统计数据已更新:', this.statsData);
-            });
-          }
-        } catch (error) {
-          console.error('解析SSE数据失败:', error);
+    handleSSEMessage(type, data) {
+      if (type === 'connection') {
+        // 连接状态变化
+        this.isConnected = data.connected;
+        if (data.connected) {
+          this.$message.success('实时连接已建立');
         }
-      };
+      } else if (type === 'message') {
+        // 收到数据
+        const imageBase64 = data.imgBase64;
+        
+        if (imageBase64 !== null && imageBase64 !== undefined && imageBase64 !== '') {
+          this.imageData = imageBase64;
+          this.defectList = data.defections || [];
+          console.log('📷 收到图片数据，缺陷数:', this.defectList.length);
+        }
+        
+        if (data.runTime !== null && data.runTime !== undefined) {
+          this.$nextTick(() => {
+            this.statsData = [{
+              runTime: this.formatRuntime(data.runTime),
+              defectionsSum: data.defectionsSum,
+              defectRate: data.defectRate ? (data.defectRate * 100).toFixed(2) + '%' : '0%',
+              highestOccurrenceDefect: data.highestOccurrenceDefect || '暂无',
+              operation: null,
+              opTime: null
+            }];
+            
+            if (data.latestOperations && Array.isArray(data.latestOperations)) {
+              let operations = data.latestOperations.map(op => ({
+                runTime: null,
+                defectionsSum: null,
+                defectRate: null,
+                highestOccurrenceDefect: null,
+                operation: op.op || op.operation || '未知操作',
+                opTime: op.time || op.opTime || '-'
+              }));
+              this.statsData = this.statsData.concat(operations);
+            }
+            
+            this.statsData = this.statsData.filter(obj => 
+              Object.values(obj).some(value => value !== null && value !== undefined)
+            );
+            
+            console.log('📊 统计数据已更新:', this.statsData);
+          });
+        }
+      }
     },
     formatRuntime(seconds) {
       const hours = Math.floor(seconds / 3600);
@@ -328,7 +323,9 @@ export default {
     Refresh() {
       console.log('🔄 手动刷新数据...');
       this.$message.info('正在刷新数据...');
-      this.initSSEConnection();
+      // 重新初始化SSE连接
+      sseManager.close();
+      sseManager.init();
     }
   }
 };

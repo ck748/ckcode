@@ -105,6 +105,13 @@ async function uploadImage(filePath) {
  */
 function moveFile(sourcePath, targetDir) {
   const fileName = path.basename(sourcePath);
+  
+  // 首先检查源文件是否存在
+  if (!fs.existsSync(sourcePath)) {
+    log(`源文件不存在，无法移动: ${fileName}`, '⚠️');
+    return false;
+  }
+  
   let targetPath = path.join(targetDir, fileName);
   
   // 处理文件名冲突
@@ -125,6 +132,12 @@ function moveFile(sourcePath, targetDir) {
   } catch (error) {
     // 如果重命名失败（可能跨文件系统），尝试复制+删除
     try {
+      // 再次检查源文件是否存在
+      if (!fs.existsSync(sourcePath)) {
+        log(`源文件已不存在，无法复制: ${fileName}`, '⚠️');
+        return false;
+      }
+      
       fs.copyFileSync(sourcePath, targetPath);
       fs.unlinkSync(sourcePath);
       const relPath = path.relative(path.join(__dirname, '..'), targetPath);
@@ -157,7 +170,7 @@ async function processImageFile(filePath) {
     
     // 检查文件是否仍然存在
     if (!fs.existsSync(filePath)) {
-      log(`文件已不存在: ${fileName}`, '⚠️');
+      log(`文件已不存在（可能已被其他程序处理）: ${fileName}`, '⚠️');
       processingFiles.delete(filePath);
       return;
     }
@@ -165,14 +178,35 @@ async function processImageFile(filePath) {
     // 上传图片
     const result = await uploadImage(filePath);
     
+    // 再次检查文件是否存在（上传过程中可能被删除）
+    if (!fs.existsSync(filePath)) {
+      log(`文件已不存在（上传后消失）: ${fileName}`, '⚠️');
+      processingFiles.delete(filePath);
+      // 虽然文件不存在，但上传成功了，计入成功数
+      if (result.success) {
+        stats.success++;
+      }
+      return;
+    }
+    
     // 移动文件
     const targetDir = result.success 
       ? path.resolve(__dirname, config.processedDir)
       : path.resolve(__dirname, config.failedDir);
     
-    if (moveFile(filePath, targetDir)) {
+    const moved = moveFile(filePath, targetDir);
+    
+    if (moved) {
       if (result.success) {
         stats.success++;
+      } else {
+        stats.failed++;
+      }
+    } else {
+      // 移动失败但上传成功，仍然计入成功
+      if (result.success) {
+        stats.success++;
+        log(`上传成功但文件移动失败（文件可能已被删除）: ${fileName}`, 'ℹ️');
       } else {
         stats.failed++;
       }
@@ -191,16 +225,20 @@ async function processImageFile(filePath) {
  */
 async function healthCheck() {
   try {
-    const url = new URL(config.uploadUrl);
-    const baseUrl = `${url.protocol}//${url.host}`;
-    
-    // 尝试连接后端
-    await axios.get(baseUrl, { timeout: 5000 });
+    // 尝试访问实际的上传接口（使用HEAD请求）
+    await axios.head(config.uploadUrl, { timeout: 5000 });
     log('后端服务连接正常', '✅');
     return true;
   } catch (error) {
-    log('后端服务暂时不可用，将在文件到达时重试', '⚠️');
-    return false;
+    // 如果是HEAD不支持，尝试OPTIONS
+    try {
+      await axios.options(config.uploadUrl, { timeout: 5000 });
+      log('后端服务连接正常', '✅');
+      return true;
+    } catch (error2) {
+      log('后端服务暂时不可用，将在文件到达时重试', '⚠️');
+      return false;
+    }
   }
 }
 
@@ -224,10 +262,7 @@ async function start() {
   log(`监听目录: ${watchPath}`, '📁');
   log(`上传接口: ${config.uploadUrl}`, '🔗');
   log(`支持格式: ${config.imageExtensions.join(', ')}`, '📷');
-  console.log('');
-  
-  // 健康检查
-  await healthCheck();
+  log('后端服务将在文件上传时自动连接', 'ℹ️');
   console.log('');
   
   // 创建文件监听器

@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @DependsOn("ImageModule")
 @RequestMapping("/metalDetect")
-@CrossOrigin("*")
+
 public class thirdController {
 
     @Autowired

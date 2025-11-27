@@ -167,6 +167,7 @@
 
 <script>
 import * as echarts from "echarts";
+import sseManager from '@/utils/sseManager';
 
 export default {
   name: "MonitorDashboard",
@@ -214,7 +215,7 @@ export default {
       ],
       imageData: null,
       defectList: [],
-      eventSourcePicture: null
+      isConnected: false // 连接状态
     };
   },
   computed: {
@@ -224,12 +225,19 @@ export default {
       const ret = [...this.defectList];
       while (ret.length < 6) ret.push(empty);
       return ret.slice(0, 6);
+    },
+    // 模拟 eventSourcePicture 用于显示连接状态
+    eventSourcePicture() {
+      return {
+        readyState: this.isConnected ? 1 : 0
+      };
     }
   },
   mounted() {
     this.$nextTick(() => {
       this.initCharts();
-      this.initSSEConnection();
+      // 订阅全局SSE
+      sseManager.subscribe('daping', this.handleSSEMessage);
       window.addEventListener("resize", this.handleResize);
       
       // 额外保险：500ms后再次检查图表尺寸
@@ -241,39 +249,30 @@ export default {
   beforeDestroy() {
     Object.values(this.charts).forEach((chart) => chart.dispose());
     window.removeEventListener("resize", this.handleResize);
-    if (this.eventSourcePicture) this.eventSourcePicture.close();
+    // 取消订阅
+    sseManager.unsubscribe('daping');
   },
   methods: {
-    /* ---- 原SSE+刷新 ---- */
-    initSSEConnection() {
-      if (this.eventSourcePicture) this.eventSourcePicture.close();
-      this.eventSourcePicture = new EventSource("api/dashboard/pictureInfo", {
-        retry: 20000
-      });
-      this.eventSourcePicture.onopen = () => {
-        console.log("✅ SSE连接成功");
-        this.$message?.success("实时连接已建立");
-      };
-      this.eventSourcePicture.onerror = (err) =>
-        console.error("❌ SSE连接错误:", err);
-      this.eventSourcePicture.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          const img = data.imgBase64;
-          if (img !== null && img !== undefined && img !== "") {
-            this.imageData = img;
-            this.defectList = data.defections || [];
-            console.log(
-              "📷 收到图片帧，长度:",
-              img.length,
-              "缺陷数:",
-              this.defectList.length
-            );
-          }
-        } catch (e) {
-          console.error("解析SSE数据失败:", e);
+    /* ---- SSE消息处理 ---- */
+    handleSSEMessage(type, data) {
+      if (type === 'connection') {
+        this.isConnected = data.connected;
+        if (data.connected) {
+          this.$message?.success('实时连接已建立');
         }
-      };
+      } else if (type === 'message') {
+        const img = data.imgBase64;
+        if (img !== null && img !== undefined && img !== "") {
+          this.imageData = img;
+          this.defectList = data.defections || [];
+          console.log(
+            "📷 收到图片帧，长度:",
+            img.length,
+            "缺陷数:",
+            this.defectList.length
+          );
+        }
+      }
     },
     // 辅助方法：为CSS class提供名称
     getProbabilityClass(score) {
@@ -284,7 +283,9 @@ export default {
     Refresh() {
       console.log("🔄 手动刷新数据");
       this.$message?.info("正在刷新数据...");
-      this.initSSEConnection();
+      // 重新初始化SSE连接
+      sseManager.close();
+      sseManager.init();
       // 强制重绘图表
       this.$nextTick(() => {
         this.handleResize();

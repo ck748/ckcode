@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/check")
 @Slf4j
-@CrossOrigin("*")
+
 public class CheckController {
 
     @Autowired

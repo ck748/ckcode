@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 @ResponseBody
 @RequestMapping("/defection")
-@CrossOrigin("*")
+
 public class DefectionController {
 
     @Autowired

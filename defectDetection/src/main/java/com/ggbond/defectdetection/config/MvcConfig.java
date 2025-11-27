@@ -17,6 +17,21 @@ import java.util.List;
 @Slf4j
 @Configuration
 public class MvcConfig implements WebMvcConfigurer {
+    
+    /**
+     * 配置CORS跨域支持
+     */
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*") // 使用allowedOriginPatterns替代allowedOrigins
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
+        log.info("✅ CORS跨域配置已启用");
+    }
+    
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**").addResourceLocations(

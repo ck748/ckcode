@@ -50,6 +50,43 @@ public class DashboardController {
     @Autowired
     SysLogService sysLogService;
 
+    @GetMapping(value="/data")
+    public Result<Map<String, Object>> getDashboardData(HttpSession httpSession) {
+        log.info("接收到Dashboard数据请求");
+        
+        try {
+            // 1. 从数据库获取最新的检测结果
+            DetectResDto resDto = getLatestDetectResult();
+            
+            // 2. 获取统计数据
+            int runTime = SystemStatusUtil.getContinuousWorkingSeconds();
+            int defectionsSum = DataModule.getTotalDefectionsNum();
+            double defectRate = DataModule.getDefectiveRate();
+            String highestOccurrenceDefect = DataModule.getHighestOccurrenceDefect();
+            
+            // 3. 查询最新的5条系统操作记录
+            LambdaQueryWrapper<SysLog> logLqw = new LambdaQueryWrapper<>();
+            logLqw.orderByDesc(SysLog::getOpTime);
+            logLqw.last("LIMIT 5");
+            java.util.List<SysLog> latestOperations = sysLogService.list(logLqw);
+            
+            // 4. 封装数据
+            Map<String, Object> data = new HashMap<>();
+            data.put("imgBase64", resDto.getImgBase64());
+            data.put("defections", resDto.getDefections());
+            data.put("defectionsSum", resDto.getDefectionsSum());
+            data.put("runTime", runTime);
+            data.put("defectRate", defectRate);
+            data.put("highestOccurrenceDefect", highestOccurrenceDefect);
+            data.put("latestOperations", latestOperations);
+            
+            return Result.success("成功", data);
+        } catch (Exception e) {
+            log.error("获取Dashboard数据失败", e);
+            return Result.fail("获取数据失败");
+        }
+    }
+
     @GetMapping(value="/pictureInfo")
     public SseEmitter flushPictureHandler(HttpSession httpSession){
 
@@ -65,8 +102,7 @@ public class DashboardController {
             userId = 1; // 使用默认值
         }
 
-        // ⚠️ 重要：先准备好所有数据，再建立连接并立即发送
-        // 这样可以避免在查询数据库期间连接被关闭
+      
         
         // 1. 从数据库获取最新的检测结果
         DetectResDto resDto = getLatestDetectResult();
@@ -97,26 +133,40 @@ public class DashboardController {
         // 4. 现在建立SSE连接
         SseEmitter sseEmitter = sseUtil.connect((long) userId);
         
-        // 5. 立即发送数据（避免连接空闲被关闭）
+        // 4.5. 立即发送一条初始化消息，确保EventSource认为连接成功
         try {
-            // 发送检测结果
-            boolean success1 = sseUtil.sendMessage((long)userId, String.valueOf(Result.IMAGE_CODE), resDto);
-            if (success1) {
-                log.info("✅ 检测结果发送成功");
-            } else {
-                log.warn("⚠️ 检测结果发送失败");
-            }
-            
-            // 发送统计信息
-            boolean success2 = sseUtil.sendMessage((long)userId, String.valueOf(Result.IMAGE_CODE), dashboardInfoDto);
-            if (success2) {
-                log.info("✅ 统计信息发送成功");
-            } else {
-                log.warn("⚠️ 统计信息发送失败");
-            }
+            sseEmitter.send(SseEmitter.event()
+                .comment("连接已建立")
+            );
+            log.info("✅ SSE初始化消息发送成功");
         } catch (Exception e) {
-            log.error("发送SSE消息失败", e);
+            log.error("发送SSE初始化消息失败", e);
         }
+        
+        // 5. 稍微延迟后发送数据（给EventSource时间进入OPEN状态）
+        new Thread(() -> {
+            try {
+                Thread.sleep(100); // 等待100毫秒
+                
+                // 发送检测结果
+                boolean success1 = sseUtil.sendMessage((long)userId, String.valueOf(Result.IMAGE_CODE), resDto);
+                if (success1) {
+                    log.info("✅ 检测结果发送成功");
+                } else {
+                    log.warn("⚠️ 检测结果发送失败");
+                }
+                
+                // 发送统计信息
+                boolean success2 = sseUtil.sendMessage((long)userId, String.valueOf(Result.IMAGE_CODE), dashboardInfoDto);
+                if (success2) {
+                    log.info("✅ 统计信息发送成功");
+                } else {
+                    log.warn("⚠️ 统计信息发送失败");
+                }
+            } catch (Exception e) {
+                log.error("发送SSE消息失败", e);
+            }
+        }).start();
 
         return sseEmitter;
     }

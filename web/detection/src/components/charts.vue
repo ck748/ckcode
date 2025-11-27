@@ -247,6 +247,7 @@
 import * as echarts from 'echarts';
 import axios from "axios";
 import moment from 'moment';
+import sseManager from '@/utils/sseManager';
 
 export default {
   data() {
@@ -264,7 +265,7 @@ export default {
         category: null,
         categoryId: null
       }],
-      eventSourcePicture: null,
+      isConnected: false, // 连接状态
       
       // 图表相关数据
       charts: [],
@@ -301,8 +302,17 @@ export default {
       },
     }
   },
+  computed: {
+    // 模拟 eventSourcePicture 用于显示连接状态
+    eventSourcePicture() {
+      return {
+        readyState: this.isConnected ? 1 : 0
+      };
+    }
+  },
   mounted() {
-    this.initSSEConnection();
+    // 订阅全局SSE
+    sseManager.subscribe('charts', this.handleSSEMessage);
     this.fetchChartsData();
     this.updateRefreshTime();
     this.updateCurrentTime();
@@ -333,9 +343,8 @@ export default {
     window.addEventListener('resize', this._onResize);
   },
   beforeDestroy() {
-    if (this.eventSourcePicture) {
-      this.eventSourcePicture.close();
-    }
+    // 取消订阅
+    sseManager.unsubscribe('charts');
     if (this.pieChart) {
       this.pieChart.dispose();
     }
@@ -351,48 +360,34 @@ export default {
   },
   methods: {
     // 监控相关方法
-    initSSEConnection() {
-      if (this.eventSourcePicture) {
-        this.eventSourcePicture.close();
-      }
-      
-      this.eventSourcePicture = new EventSource('api/dashboard/pictureInfo', { retry: 20000 });
-      
-      this.eventSourcePicture.onopen = (event) => {
-        console.log('SSE连接成功');
-        if (this.$message && this.$message.success) this.$message.success('实时连接已建立');
-      };
-      
-      this.eventSourcePicture.onerror = (error) => {
-        console.error('SSE连接错误:', error);
-      };
-      
-      this.eventSourcePicture.onmessage = event => {
-        try {
-          const data = JSON.parse(event.data);
-          const imageBase64 = data.imgBase64;
-          
-          if (imageBase64 !== null && imageBase64 !== undefined && imageBase64 !== '') {
-            this.imageData = imageBase64;
-            // 更新安全评分和等级（模拟实时变化）
-            this.updateSecurityInfo(data);
-          }
-          
-          if (data.defections && Array.isArray(data.defections)) {
-            this.defectList = data.defections;
-            // 实时更新图表数据
-            this.updateChartsWithDefects(data.defections);
-          }
-          
-          // 更新统计信息为实时数据
-          if (data.defections && data.defections[0]) {
-            this.updateStatsWithDefectDetails(data.defections[0]);
-          }
-
-        } catch (error) {
-          console.error('解析SSE数据失败:', error);
+    handleSSEMessage(type, data) {
+      if (type === 'connection') {
+        // 连接状态变化
+        this.isConnected = data.connected;
+        if (data.connected) {
+          if (this.$message && this.$message.success) this.$message.success('实时连接已建立');
         }
-      };
+      } else if (type === 'message') {
+        // 收到数据
+        const imageBase64 = data.imgBase64;
+        
+        if (imageBase64 !== null && imageBase64 !== undefined && imageBase64 !== '') {
+          this.imageData = imageBase64;
+          // 更新安全评分和等级（模拟实时变化）
+          this.updateSecurityInfo(data);
+        }
+        
+        if (data.defections && Array.isArray(data.defections)) {
+          this.defectList = data.defections;
+          // 实时更新图表数据
+          this.updateChartsWithDefects(data.defections);
+        }
+        
+        // 更新统计信息为实时数据
+        if (data.defections && data.defections[0]) {
+          this.updateStatsWithDefectDetails(data.defections[0]);
+        }
+      }
     },
 
     // 更新安全评分和等级信息
@@ -1162,7 +1157,8 @@ export default {
     }
   },
   mounted() {
-    this.initSSEConnection();
+    // 订阅全局SSE
+    sseManager.subscribe('charts', this.handleSSEMessage);
     this.fetchChartsData();
     this.updateRefreshTime();
     this.updateCurrentTime();
@@ -1190,7 +1186,8 @@ export default {
     window.addEventListener('resize', this._onResize);
   },
   beforeDestroy() {
-    if (this.eventSourcePicture) this.eventSourcePicture.close();
+    // 取消订阅
+    sseManager.unsubscribe('charts');
     if (this.pieChart) this.pieChart.dispose();
     if (this.barChart) this.barChart.dispose();
     if (this.defectBarChart) this.defectBarChart.dispose();
@@ -1200,32 +1197,6 @@ export default {
   },
   methods: {
     // --- 核心逻辑保留原有代码，仅展示图表美化部分 ---
-
-    initSSEConnection() {
-      if (this.eventSourcePicture) this.eventSourcePicture.close();
-      this.eventSourcePicture = new EventSource('api/dashboard/pictureInfo', { retry: 20000 });
-      this.eventSourcePicture.onopen = () => console.log('SSE连接成功');
-      this.eventSourcePicture.onerror = (err) => console.error('SSE连接错误:', err);
-      this.eventSourcePicture.onmessage = event => {
-        try {
-          const data = JSON.parse(event.data);
-          const imageBase64 = data.imgBase64;
-          if (imageBase64) {
-            this.imageData = imageBase64;
-            this.updateSecurityInfo(data);
-          }
-          if (data.defections) {
-            this.defectList = data.defections;
-            this.updateChartsWithDefects(data.defections);
-          }
-          if (data.defections && data.defections[0]) {
-            this.updateStatsWithDefectDetails(data.defections[0]);
-          }
-        } catch (error) {
-          console.error('解析SSE失败:', error);
-        }
-      };
-    },
 
     updateSecurityInfo(data) {
       const defectCount = data.defections ? data.defections.length : 0;

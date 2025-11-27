@@ -44,7 +44,6 @@ import java.util.Map;
 @DependsOn("ConfigProperties")
 @RestController //接受ip摄像机的图像需要
 @RequestMapping("/detect")
-@CrossOrigin("*")
 public class ImageModule {
 
     @Autowired

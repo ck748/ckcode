@@ -94,12 +94,23 @@
           </div>
           <div class="annotation-content">
             <div class="image-container">
-              <img 
-                :src="getImageUrl(selectedImage.imagePath)" 
-                :alt="selectedImage.imageName"
-                class="annotation-image"
-                ref="annotationImage"
-              />
+              <div style="position: relative; display: inline-block;">
+                <img 
+                  :src="getImageUrl(selectedImage.imagePath)" 
+                  :alt="selectedImage.imageName"
+                  class="annotation-image"
+                  ref="annotationImage"
+                  @load="initCanvas"
+                  style="display: block;"
+                />
+                <canvas
+                  ref="annotationCanvas"
+                  @mousedown="startDrawing"
+                  @mousemove="drawRectangle"
+                  @mouseup="finishDrawing"
+                  style="position: absolute; top: 0; left: 0; cursor: crosshair; pointer-events: auto;"
+                ></canvas>
+              </div>
             </div>
             <div class="annotation-tools">
               <div class="tool-section">
@@ -120,6 +131,19 @@
                 <div style="margin-top: 20px; color: #909399;" v-if="selectedCategory">
                   <i class="el-icon-success" style="color: #67C23A;"></i>
                   已选择：{{ getCategoryName(selectedCategory) }}
+                </div>
+                <div style="margin-top: 15px;" v-if="selectedCategory && (getCategoryName(selectedCategory) === '裂痕' || getCategoryName(selectedCategory) === '划痕')">
+                  <el-alert
+                    title="请在图片上绘制标注框"
+                    type="warning"
+                    description="在图片上按住鼠标左键，拖动到缺陷位置，松开完成绘制"
+                    :closable="false"
+                    show-icon>
+                  </el-alert>
+                </div>
+                <div style="margin-top: 15px;" v-if="currentAnnotations.length > 0">
+                  <h4>已绘制标注框：{{ currentAnnotations.length }} 个</h4>
+                  <el-button size="small" type="danger" @click="clearAnnotations">清除所有标注</el-button>
                 </div>
               </div>
             </div>
@@ -176,6 +200,14 @@ export default {
       // 标注相关
       selectedCategory: null,
       defectCategories: [],
+      currentAnnotations: [],
+      
+      // Canvas绘图相关
+      canvasContext: null,
+      isDrawing: false,
+      startX: 0,
+      startY: 0,
+      activeTool: 'rectangle',
       
       // 对话框相关
       uploadDialogVisible: false,
@@ -215,7 +247,11 @@ export default {
     selectImage(image) {
       this.selectedImage = image
       this.selectedImageId = image.id
-      this.loadImageAnnotations(image.id)
+      this.currentAnnotations = []
+      this.$nextTick(() => {
+        this.initCanvas()
+        this.loadImageAnnotations(image.id)
+      })
     },
     
     deleteImage(image) {
@@ -263,22 +299,47 @@ export default {
     
     // 标注相关方法
     initCanvas() {
-      if (!this.$refs.annotationCanvas || !this.$refs.annotationImage) return
-      
-      const canvas = this.$refs.annotationCanvas
-      const image = this.$refs.annotationImage
-      const rect = image.getBoundingClientRect()
-      
-      canvas.width = rect.width
-      canvas.height = rect.height
-      canvas.style.position = 'absolute'
-      canvas.style.top = rect.top + 'px'
-      canvas.style.left = rect.left + 'px'
-      
-      this.canvasContext = canvas.getContext('2d')
-      this.canvasContext.strokeStyle = '#ff0000'
-      this.canvasContext.lineWidth = 2
-      this.redrawAnnotations()
+      this.$nextTick(() => {
+        if (!this.$refs.annotationCanvas || !this.$refs.annotationImage) {
+          console.log('Canvas或图片引用不存在')
+          return
+        }
+        
+        const canvas = this.$refs.annotationCanvas
+        const image = this.$refs.annotationImage
+        
+        // 等待图片完全加载
+        if (!image.complete) {
+          console.log('图片未加载完成，等待加载...')
+          image.onload = () => this.initCanvas()
+          return
+        }
+        
+        // 直接使用图片的实际显示尺寸
+        const width = image.width || image.offsetWidth || image.clientWidth
+        const height = image.height || image.offsetHeight || image.clientHeight
+        
+        // 设置Canvas尺寸与图片完全一致
+        canvas.width = width
+        canvas.height = height
+        
+        console.log('✅ Canvas初始化成功：', {
+          canvasWidth: canvas.width,
+          canvasHeight: canvas.height,
+          imageOffsetWidth: image.offsetWidth,
+          imageOffsetHeight: image.offsetHeight,
+          imageClientWidth: image.clientWidth,
+          imageClientHeight: image.clientHeight
+        })
+        
+        // 初始化画布上下文
+        this.canvasContext = canvas.getContext('2d')
+        this.canvasContext.strokeStyle = '#ff0000'
+        this.canvasContext.lineWidth = 3
+        
+        // 重绘已有标注
+        this.redrawAnnotations()
+      })
     },
     
     setActiveTool(tool) {
@@ -416,30 +477,56 @@ export default {
       
       this.savingAnnotations = true
       
-      // 创建简单的标注数据（不需要坐标和尺寸）
-      const annotationData = {
-        rawImageId: this.selectedImage.id,
-        taskId: parseInt(this.activeTaskId) || null,
-        categoryId: this.selectedCategory,
-        category: this.getCategoryName(this.selectedCategory),
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-        confidence: 1.0,
-        annotatorId: 1,
-        annotatorName: '标注员',
-        annotationTime: new Date().toISOString()
+      // 检查是否是裂痕或划痕，如果是，需要有标注框
+      const categoryName = this.getCategoryName(this.selectedCategory)
+      const isDefect = categoryName === '裂痕' || categoryName === '划痕'
+      
+      if (isDefect && this.currentAnnotations.length === 0) {
+        this.$message.warning('请在图片上绘制标注框')
+        this.savingAnnotations = false
+        return
       }
       
-      axios.post('/api/annotation/data', [annotationData])
+      let annotationDataList = []
+      
+      if (isDefect && this.currentAnnotations.length > 0) {
+        // 如果是裂痕或划痕，使用绘制的标注框数据
+        annotationDataList = this.currentAnnotations.map(annotation => ({
+          ...annotation,
+          categoryId: this.selectedCategory,
+          category: categoryName
+        }))
+      } else {
+        // 合格类别，不需要坐标
+        annotationDataList = [{
+          rawImageId: this.selectedImage.id,
+          taskId: parseInt(this.activeTaskId) || null,
+          categoryId: this.selectedCategory,
+          category: categoryName,
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+          confidence: 1.0,
+          annotatorId: 1,
+          annotatorName: '标注员',
+          annotationTime: new Date().toISOString()
+        }]
+      }
+      
+      axios.post('/api/annotation/data', annotationDataList)
         .then(response => {
           if (response.data.code === 200) {
-            this.$message.success('保存标注数据成功')
+            if (isDefect) {
+              this.$message.success('保存标注成功，已自动生成带框图片')
+            } else {
+              this.$message.success('保存标注数据成功')
+            }
             // 清空选择
             this.selectedCategory = null
             this.selectedImage = null
             this.selectedImageId = null
+            this.currentAnnotations = []
             // 自动刷新图片列表，更新状态
             this.loadImages()
           } else {
@@ -745,12 +832,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 400px;
 }
 
 .annotation-image {
   max-width: 100%;
   max-height: 100%;
   display: block;
+  object-fit: contain;
 }
 
 .annotation-canvas {
