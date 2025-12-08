@@ -55,7 +55,7 @@ ai:
 # 区块链配置
 blockchain:
   # 是否启用区块链功能
-  enabled: true
+  enabled: false
   # FISCO BCOS节点配置
   peers: 127.0.0.1:5002
   # 群组ID
