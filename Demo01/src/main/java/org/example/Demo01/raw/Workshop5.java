@@ -1,0 +1,219 @@
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.fisco.bcos.sdk.abi.FunctionEncoder;
+import org.fisco.bcos.sdk.abi.FunctionReturnDecoder;
+import org.fisco.bcos.sdk.abi.TypeReference;
+import org.fisco.bcos.sdk.abi.datatypes.Address;
+import org.fisco.bcos.sdk.abi.datatypes.Bool;
+import org.fisco.bcos.sdk.abi.datatypes.Function;
+import org.fisco.bcos.sdk.abi.datatypes.Type;
+import org.fisco.bcos.sdk.abi.datatypes.Utf8String;
+import org.fisco.bcos.sdk.abi.datatypes.generated.Int256;
+import org.fisco.bcos.sdk.abi.datatypes.generated.StaticArray3;
+import org.fisco.bcos.sdk.abi.datatypes.generated.Uint256;
+import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple1;
+import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple4;
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.contract.Contract;
+import org.fisco.bcos.sdk.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.model.CryptoType;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
+import org.fisco.bcos.sdk.model.callback.TransactionCallback;
+import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+
+@SuppressWarnings("unchecked")
+public class Workshop5 extends Contract {
+    public static final String[] BINARY_ARRAY = {"60806040527fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6002556040518060400160405280600c81526020017fe587bae5ba93e8bda6e997b40000000000000000000000000000000000000000815250600690805190602001906200007592919062000249565b506000600760006101000a81548160ff0219169083151502179055503480156200009e57600080fd5b5060405162001654380380620016548339818101604052810190620000c491906200030f565b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506040518060400160405280600681526020017fe596b7e6bc86000000000000000000000000000000000000000000000000000081525060016040516200014a90620003f2565b908152602001604051809103902090805190602001906200016d92919062000249565b506040518060400160405280600681526020017fe58c85e8a38500000000000000000000000000000000000000000000000000008152506001604051620001b49062000409565b90815260200160405180910390209080519060200190620001d792919062000249565b506040518060400160405280600681526020017fe587bae5ba93000000000000000000000000000000000000000000000000000081525060016040516200021e90620003db565b908152602001604051809103902090805190602001906200024192919062000249565b505062000479565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106200028c57805160ff1916838001178555620002bd565b82800160010185558215620002bd579182015b82811115620002bc5782518255916020019190600101906200029f565b5b509050620002cc9190620002d0565b5090565b620002f591905b80821115620002f1576000816000905550600101620002d7565b5090565b90565b60008151905062000309816200045f565b92915050565b6000602082840312156200032257600080fd5b60006200033284828501620002f8565b91505092915050565b60006200034a60068362000420565b91507fe58c85e8a38500000000000000000000000000000000000000000000000000006000830152600682019050919050565b60006200038c60008362000420565b9150600082019050919050565b6000620003a860068362000420565b91507fe596b7e6bc8600000000000000000000000000000000000000000000000000006000830152600682019050919050565b6000620003e8826200033b565b9150819050919050565b6000620003ff826200037d565b9150819050919050565b6000620004168262000399565b9150819050919050565b600081905092915050565b600062000438826200043f565b9050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6200046a816200042b565b81146200047657600080fd5b50565b6111cb80620004896000396000f3fe608060405234801561001057600080fd5b50600436106100a95760003560e01c8063481c6a7511610071578063481c6a751461014557806359b5793214610163578063a0308ba514610181578063dc2d9af01461019f578063e70981d5146101bd578063ebc0bb1f146101db576100a9565b80632c3891cc146100ae578063334f45ec146100cc5780633b51782f146100ea5780633bc5de301461010857806347064d6a14610129575b600080fd5b6100b66101f9565b6040516100c39190610ed0565b60405180910390f35b6100d461021e565b6040516100e19190610eeb565b60405180910390f35b6100f2610224565b6040516100ff9190610f88565b60405180910390f35b61011061022a565b6040516101209493929190610fa3565b60405180910390f35b610143600480360381019061013e9190610bf1565b61041c565b005b61014d6106de565b60405161015a9190610f06565b60405180910390f35b61016b61077c565b6040516101789190610eb5565b60405180910390f35b61018961078f565b6040516101969190610f06565b60405180910390f35b6101a761081b565b6040516101b49190610e93565b60405180910390f35b6101c56108ee565b6040516101d29190610f06565b60405180910390f35b6101e361098c565b6040516101f09190610f06565b60405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60025481565b60035481565b60006060806060600354600460056006828054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156102cf5780601f106102a4576101008083540402835291602001916102cf565b820191906000526020600020905b8154815290600101906020018083116102b257829003601f168201915b50505050509250818054600181600116156101000203166002900480601f01602080910402602001604051908101604052809291908181526020018280546001816001161561010002031660029004801561036b5780601f106103405761010080835404028352916020019161036b565b820191906000526020600020905b81548152906001019060200180831161034e57829003601f168201915b50505050509150808054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156104075780601f106103dc57610100808354040283529160200191610407565b820191906000526020600020905b8154815290600101906020018083116103ea57829003601f168201915b50505050509050935093509350935090919293565b600760009054906101000a900460ff161561046c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161046390610f48565b60405180910390fd5b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166359b579326040518163ffffffff1660e01b815260040160206040518083038186803b1580156104d357600080fd5b505afa1580156104e7573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061050b9190610bc8565b61054a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161054190610f68565b60405180910390fd5b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663f25be4f26040518163ffffffff1660e01b815260040160206040518083038186803b1580156105b157600080fd5b505afa1580156105c5573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105e99190610c73565b6003819055506000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663ebc0bb1f6040518163ffffffff1660e01b815260040160006040518083038186803b15801561065657600080fd5b505afa15801561066a573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f820116820180604052508101906106939190610c32565b600490805190602001906106a8929190610a2a565b5080600590805190602001906106bf929190610a2a565b506001600760006101000a81548160ff02191690831515021790555050565b60058054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156107745780601f1061074957610100808354040283529160200191610774565b820191906000526020600020905b81548152906001019060200180831161075757829003601f168201915b505050505081565b600760009054906101000a900460ff1681565b6060600760009054906101000a900460ff166107e0576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016107d790610f28565b60405180910390fd5b6040518060400160405280600681526020017fe587bae5ba930000000000000000000000000000000000000000000000000000815250905090565b610823610aaa565b61082b610aaa565b60405180606001604052806040518060400160405280600681526020017fe596b7e6bc86000000000000000000000000000000000000000000000000000081525081526020016040518060400160405280600681526020017fe58c85e8a385000000000000000000000000000000000000000000000000000081525081526020016040518060400160405280600681526020017fe587bae5ba93000000000000000000000000000000000000000000000000000081525081525090508091505090565b60068054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156109845780601f1061095957610100808354040283529160200191610984565b820191906000526020600020905b81548152906001019060200180831161096757829003601f168201915b505050505081565b60048054600181600116156101000203166002900480601f016020809104026020016040519081016040528092919081815260200182805460018160011615610100020316600290048015610a225780601f106109f757610100808354040283529160200191610a22565b820191906000526020600020905b815481529060010190602001808311610a0557829003601f168201915b505050505081565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f10610a6b57805160ff1916838001178555610a99565b82800160010185558215610a99579182015b82811115610a98578251825591602001919060010190610a7d565b5b509050610aa69190610ad1565b5090565b60405180606001604052806003905b6060815260200190600190039081610ab95790505090565b610af391905b80821115610aef576000816000905550600101610ad7565b5090565b90565b600081519050610b0581611167565b92915050565b600082601f830112610b1c57600080fd5b8135610b2f610b2a8261102a565b610ffd565b91508082526020830160208301858383011115610b4b57600080fd5b610b56838284611114565b50505092915050565b600082601f830112610b7057600080fd5b8151610b8361","0b7e8261102a565b610ffd565b91508082526020830160208301858383011115610b9f57600080fd5b610baa838284611123565b50505092915050565b600081519050610bc28161117e565b92915050565b600060208284031215610bda57600080fd5b6000610be884828501610af6565b91505092915050565b600060208284031215610c0357600080fd5b600082013567ffffffffffffffff811115610c1d57600080fd5b610c2984828501610b0b565b91505092915050565b600060208284031215610c4457600080fd5b600082015167ffffffffffffffff811115610c5e57600080fd5b610c6a84828501610b5f565b91505092915050565b600060208284031215610c8557600080fd5b6000610c9384828501610bb3565b91505092915050565b6000610ca88383610d52565b905092915050565b6000610cbb82611060565b610cc58185611083565b935083602082028501610cd785611056565b8060005b85811015610d135784840389528151610cf48582610c9c565b9450610cff83611076565b925060208a01995050600181019050610cdb565b50829750879550505050505092915050565b610d2e816110b0565b82525050565b610d3d816110f0565b82525050565b610d4c816110bc565b82525050565b6000610d5d8261106b565b610d67818561108e565b9350610d77818560208601611123565b610d8081611156565b840191505092915050565b6000610d968261106b565b610da0818561109f565b9350610db0818560208601611123565b610db981611156565b840191505092915050565b6000610dd160158361109f565b91507fe69caae5ae8ce68890e695b0e68daee5bd95e585a500000000000000000000006000830152602082019050919050565b6000610e11600f8361109f565b91507fe695b0e68daee5b7b2e7a1aee8aea400000000000000000000000000000000006000830152602082019050919050565b6000610e51600f8361109f565b91507fe5898de5ba8fe69caae5ae8ce6889000000000000000000000000000000000006000830152602082019050919050565b610e8d816110e6565b82525050565b60006020820190508181036000830152610ead8184610cb0565b905092915050565b6000602082019050610eca6000830184610d25565b92915050565b6000602082019050610ee56000830184610d34565b92915050565b6000602082019050610f006000830184610d43565b92915050565b60006020820190508181036000830152610f208184610d8b565b905092915050565b60006020820190508181036000830152610f4181610dc4565b9050919050565b60006020820190508181036000830152610f6181610e04565b9050919050565b60006020820190508181036000830152610f8181610e44565b9050919050565b6000602082019050610f9d6000830184610e84565b92915050565b6000608082019050610fb86000830187610e84565b8181036020830152610fca8186610d8b565b90508181036040830152610fde8185610d8b565b90508181036060830152610ff28184610d8b565b905095945050505050565b6000604051905081810181811067ffffffffffffffff8211171561102057600080fd5b8060405250919050565b600067ffffffffffffffff82111561104157600080fd5b601f19601f8301169050602081019050919050565b6000819050919050565b600060039050919050565b600081519050919050565b6000602082019050919050565b600081905092915050565b600082825260208201905092915050565b600082825260208201905092915050565b60008115159050919050565b6000819050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b60006110fb82611102565b9050919050565b600061110d826110c6565b9050919050565b82818337600083830152505050565b60005b83811015611141578082015181840152602081019050611126565b83811115611150576000848401525b50505050565b6000601f19601f8301169050919050565b611170816110b0565b811461117b57600080fd5b50565b611187816110e6565b811461119257600080fd5b5056fea2646970667358221220148495e8b071406fecf66c7e385dd3ac659c91bd0f6d5df219f458e730bd92fd64736f6c634300060a0033"};
+
+    public static final String BINARY = org.fisco.bcos.sdk.utils.StringUtils.joinAll("", BINARY_ARRAY);
+
+    public static final String[] SM_BINARY_ARRAY = {};
+
+    public static final String SM_BINARY = org.fisco.bcos.sdk.utils.StringUtils.joinAll("", SM_BINARY_ARRAY);
+
+    public static final String[] ABI_ARRAY = {"[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_workshop4Addr\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"axleModelId\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentStepIndex\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"dataConfirmed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getData\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getProcess\",\"outputs\":[{\"internalType\":\"string[3]\",\"name\":\"\",\"type\":\"string[3]\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"inputQty\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"manager\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"prevWorkshop\",\"outputs\":[{\"internalType\":\"contract Workshop4\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_manager\",\"type\":\"string\"}],\"name\":\"setData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"shipOut\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"workshopNo\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"};
+
+    public static final String ABI = org.fisco.bcos.sdk.utils.StringUtils.joinAll("", ABI_ARRAY);
+
+    public static final String FUNC_AXLEMODELID = "axleModelId";
+
+    public static final String FUNC_CURRENTSTEPINDEX = "currentStepIndex";
+
+    public static final String FUNC_DATACONFIRMED = "dataConfirmed";
+
+    public static final String FUNC_GETDATA = "getData";
+
+    public static final String FUNC_GETPROCESS = "getProcess";
+
+    public static final String FUNC_INPUTQTY = "inputQty";
+
+    public static final String FUNC_MANAGER = "manager";
+
+    public static final String FUNC_PREVWORKSHOP = "prevWorkshop";
+
+    public static final String FUNC_SETDATA = "setData";
+
+    public static final String FUNC_SHIPOUT = "shipOut";
+
+    public static final String FUNC_WORKSHOPNO = "workshopNo";
+
+    protected Workshop5(String contractAddress, Client client, CryptoKeyPair credential) {
+        super(getBinary(client.getCryptoSuite()), contractAddress, client, credential);
+    }
+
+    public static String getBinary(CryptoSuite cryptoSuite) {
+        return (cryptoSuite.getCryptoTypeConfig() == CryptoType.ECDSA_TYPE ? BINARY : SM_BINARY);
+    }
+
+    public String axleModelId() throws ContractException {
+        final Function function = new Function(FUNC_AXLEMODELID, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+        return executeCallWithSingleValueReturn(function, String.class);
+    }
+
+    public BigInteger currentStepIndex() throws ContractException {
+        final Function function = new Function(FUNC_CURRENTSTEPINDEX, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Int256>() {}));
+        return executeCallWithSingleValueReturn(function, BigInteger.class);
+    }
+
+    public Boolean dataConfirmed() throws ContractException {
+        final Function function = new Function(FUNC_DATACONFIRMED, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Bool>() {}));
+        return executeCallWithSingleValueReturn(function, Boolean.class);
+    }
+
+    public Tuple4<BigInteger, String, String, String> getData() throws ContractException {
+        final Function function = new Function(FUNC_GETDATA, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Utf8String>() {}));
+        List<Type> results = executeCallWithMultipleValueReturn(function);
+        return new Tuple4<BigInteger, String, String, String>(
+                (BigInteger) results.get(0).getValue(), 
+                (String) results.get(1).getValue(), 
+                (String) results.get(2).getValue(), 
+                (String) results.get(3).getValue());
+    }
+
+    public TransactionReceipt getProcess() {
+        final Function function = new Function(
+                FUNC_GETPROCESS, 
+                Arrays.<Type>asList(), 
+                Collections.<TypeReference<?>>emptyList());
+        return executeTransaction(function);
+    }
+
+    public byte[] getProcess(TransactionCallback callback) {
+        final Function function = new Function(
+                FUNC_GETPROCESS, 
+                Arrays.<Type>asList(), 
+                Collections.<TypeReference<?>>emptyList());
+        return asyncExecuteTransaction(function, callback);
+    }
+
+    public String getSignedTransactionForGetProcess() {
+        final Function function = new Function(
+                FUNC_GETPROCESS, 
+                Arrays.<Type>asList(), 
+                Collections.<TypeReference<?>>emptyList());
+        return createSignedTransaction(function);
+    }
+
+    public Tuple1<List<String>> getGetProcessOutput(TransactionReceipt transactionReceipt) {
+        String data = transactionReceipt.getOutput();
+        final Function function = new Function(FUNC_GETPROCESS, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<StaticArray3<Utf8String>>() {}));
+        List<Type> results = FunctionReturnDecoder.decode(data, function.getOutputParameters());
+        return new Tuple1<List<String>>(
+
+                convertToNative((List<Utf8String>) results.get(0).getValue())
+                );
+    }
+
+    public BigInteger inputQty() throws ContractException {
+        final Function function = new Function(FUNC_INPUTQTY, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
+        return executeCallWithSingleValueReturn(function, BigInteger.class);
+    }
+
+    public String manager() throws ContractException {
+        final Function function = new Function(FUNC_MANAGER, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+        return executeCallWithSingleValueReturn(function, String.class);
+    }
+
+    public String prevWorkshop() throws ContractException {
+        final Function function = new Function(FUNC_PREVWORKSHOP, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
+        return executeCallWithSingleValueReturn(function, String.class);
+    }
+
+    public TransactionReceipt setData(String _manager) {
+        final Function function = new Function(
+                FUNC_SETDATA, 
+                Arrays.<Type>asList(new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_manager)), 
+                Collections.<TypeReference<?>>emptyList());
+        return executeTransaction(function);
+    }
+
+    public byte[] setData(String _manager, TransactionCallback callback) {
+        final Function function = new Function(
+                FUNC_SETDATA, 
+                Arrays.<Type>asList(new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_manager)), 
+                Collections.<TypeReference<?>>emptyList());
+        return asyncExecuteTransaction(function, callback);
+    }
+
+    public String getSignedTransactionForSetData(String _manager) {
+        final Function function = new Function(
+                FUNC_SETDATA, 
+                Arrays.<Type>asList(new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_manager)), 
+                Collections.<TypeReference<?>>emptyList());
+        return createSignedTransaction(function);
+    }
+
+    public Tuple1<String> getSetDataInput(TransactionReceipt transactionReceipt) {
+        String data = transactionReceipt.getInput().substring(10);
+        final Function function = new Function(FUNC_SETDATA, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+        List<Type> results = FunctionReturnDecoder.decode(data, function.getOutputParameters());
+        return new Tuple1<String>(
+
+                (String) results.get(0).getValue()
+                );
+    }
+
+    public String shipOut() throws ContractException {
+        final Function function = new Function(FUNC_SHIPOUT, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+        return executeCallWithSingleValueReturn(function, String.class);
+    }
+
+    public String workshopNo() throws ContractException {
+        final Function function = new Function(FUNC_WORKSHOPNO, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+        return executeCallWithSingleValueReturn(function, String.class);
+    }
+
+    public static Workshop5 load(String contractAddress, Client client, CryptoKeyPair credential) {
+        return new Workshop5(contractAddress, client, credential);
+    }
+
+    public static Workshop5 deploy(Client client, CryptoKeyPair credential, String _workshop4Addr) throws ContractException {
+        String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new org.fisco.bcos.sdk.abi.datatypes.Address(_workshop4Addr)));
+        return deploy(Workshop5.class, client, credential, getBinary(client.getCryptoSuite()), encodedConstructor);
+    }
+}

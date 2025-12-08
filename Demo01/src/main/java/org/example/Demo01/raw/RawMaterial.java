@@ -1,0 +1,150 @@
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.fisco.bcos.sdk.abi.FunctionReturnDecoder;
+import org.fisco.bcos.sdk.abi.TypeReference;
+import org.fisco.bcos.sdk.abi.datatypes.Function;
+import org.fisco.bcos.sdk.abi.datatypes.Type;
+import org.fisco.bcos.sdk.abi.datatypes.Utf8String;
+import org.fisco.bcos.sdk.abi.datatypes.generated.Uint256;
+import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple4;
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.contract.Contract;
+import org.fisco.bcos.sdk.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.model.CryptoType;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
+import org.fisco.bcos.sdk.model.callback.TransactionCallback;
+import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+
+@SuppressWarnings("unchecked")
+public class RawMaterial extends Contract {
+    public static final String[] BINARY_ARRAY = {"608060405234801561001057600080fd5b50610aed806100206000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c8063134e5d71146100675780632129e6a21461025a5780632d2ec960146103bc5780634972134a1461043f57806399504ed1146104c2578063b643dde314610545575b600080fd5b6102586004803603608081101561007d57600080fd5b810190808035906020019064010000000081111561009a57600080fd5b8201836020820111156100ac57600080fd5b803590602001918460018302840111640100000000831117156100ce57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561013157600080fd5b82018360208201111561014357600080fd5b8035906020019184600183028401116401000000008311171561016557600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190929190803590602001906401000000008111156101d257600080fd5b8201836020820111156101e457600080fd5b8035906020019184600183028401116401000000008311171561020657600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f820116905080830192505050505050509192919290505050610563565b005b610262610640565b60405180806020018060200185815260200180602001848103845288818151815260200191508051906020019080838360005b838110156102b0578082015181840152602081019050610295565b50505050905090810190601f1680156102dd5780820380516001836020036101000a031916815260200191505b50848103835287818151815260200191508051906020019080838360005b838110156103165780820151818401526020810190506102fb565b50505050905090810190601f1680156103435780820380516001836020036101000a031916815260200191505b50848103825285818151815260200191508051906020019080838360005b8381101561037c578082015181840152602081019050610361565b50505050905090810190601f1680156103a95780820380516001836020036101000a031916815260200191505b5097505050505050505060405180910390f35b6103c4610832565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156104045780820151818401526020810190506103e9565b50505050905090810190601f1680156104315780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6104476108d0565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561048757808201518184015260208101905061046c565b50505050905090810190601f1680156104b45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6104ca61096e565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561050a5780820151818401526020810190506104ef565b50505050905090810190601f1680156105375780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b61054d610a0c565b6040518082815260200191505060405180910390f35b600080805460018160011615610100020316600290049050146105ee576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807fe58e9fe69d90e69699e4bfa1e681afe5b7b2e5bd95e585a5000000000000000081525060200191505060405180910390fd5b8360009080519060200190610604929190610a12565b50826001908051906020019061061b929190610a12565b50816002819055508060039080519060200190610639929190610a12565b5050505050565b60608060006060600060016002546003838054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156106e55780601f106106ba576101008083540402835291602001916106e5565b820191906000526020600020905b8154815290600101906020018083116106c857829003601f168201915b50505050509350828054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156107815780601f1061075657610100808354040283529160200191610781565b820191906000526020600020905b81548152906001019060200180831161076457829003601f168201915b50505050509250808054600181600116156101000203166002900480601f01602080910402602001604051908101604052809291908181526020018280546001816001161561010002031660029004801561081d5780601f106107f25761010080835404028352916020019161081d565b820191906000526020600020905b81548152906001019060200180831161080057829003601f168201915b50505050509050935093509350935090919293565b60008054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156108c85780601f1061089d576101008083540402835291602001916108c8565b820191906000526020600020905b8154815290600101906020018083116108ab57829003601f168201915b505050505081565b60038054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156109665780601f1061093b57610100808354040283529160200191610966565b820191906000526020600020905b81548152906001019060200180831161094957829003601f168201915b505050505081565b60018054600181600116156101000203166002900480601f016020809104026020016040519081016040528092919081815260200182805460018160011615610100020316600290048015610a045780601f106109d957610100808354040283529160200191610a04565b820191906000526020600020905b8154815290600101906020018083116109e757829003601f168201915b505050505081565b60025481565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f10610a5357805160ff1916838001178555610a81565b82800160010185558215610a81579182015b82811115610a80578251825591602001919060010190610a65565b5b509050610a8e9190610a92565b5090565b610ab491905b80821115610ab0576000816000905550600101610a98565b5090565b9056fea2646970667358221220e5821d5cfe5e9a7277e06c8f48328b8001f2be4b45540faf3a0ba481443b183164736f6c634300060a0033"};
+
+    public static final String BINARY = org.fisco.bcos.sdk.utils.StringUtils.joinAll("", BINARY_ARRAY);
+
+    public static final String[] SM_BINARY_ARRAY = {};
+
+    public static final String SM_BINARY = org.fisco.bcos.sdk.utils.StringUtils.joinAll("", SM_BINARY_ARRAY);
+
+    public static final String[] ABI_ARRAY = {"[{\"inputs\":[],\"name\":\"axleProducerAddr\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"batchId\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRawMaterial\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rawProducerAddr\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_rawProducerAddr\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_axleProducerAddr\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_totalRawWeight\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_batchId\",\"type\":\"string\"}],\"name\":\"setRawMaterial\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalRawWeight\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"};
+
+    public static final String ABI = org.fisco.bcos.sdk.utils.StringUtils.joinAll("", ABI_ARRAY);
+
+    public static final String FUNC_AXLEPRODUCERADDR = "axleProducerAddr";
+
+    public static final String FUNC_BATCHID = "batchId";
+
+    public static final String FUNC_GETRAWMATERIAL = "getRawMaterial";
+
+    public static final String FUNC_RAWPRODUCERADDR = "rawProducerAddr";
+
+    public static final String FUNC_SETRAWMATERIAL = "setRawMaterial";
+
+    public static final String FUNC_TOTALRAWWEIGHT = "totalRawWeight";
+
+    protected RawMaterial(String contractAddress, Client client, CryptoKeyPair credential) {
+        super(getBinary(client.getCryptoSuite()), contractAddress, client, credential);
+    }
+
+    public static String getBinary(CryptoSuite cryptoSuite) {
+        return (cryptoSuite.getCryptoTypeConfig() == CryptoType.ECDSA_TYPE ? BINARY : SM_BINARY);
+    }
+
+    public String axleProducerAddr() throws ContractException {
+        final Function function = new Function(FUNC_AXLEPRODUCERADDR, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+        return executeCallWithSingleValueReturn(function, String.class);
+    }
+
+    public String batchId() throws ContractException {
+        final Function function = new Function(FUNC_BATCHID, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+        return executeCallWithSingleValueReturn(function, String.class);
+    }
+
+    public Tuple4<String, String, BigInteger, String> getRawMaterial() throws ContractException {
+        final Function function = new Function(FUNC_GETRAWMATERIAL, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Uint256>() {}, new TypeReference<Utf8String>() {}));
+        List<Type> results = executeCallWithMultipleValueReturn(function);
+        return new Tuple4<String, String, BigInteger, String>(
+                (String) results.get(0).getValue(), 
+                (String) results.get(1).getValue(), 
+                (BigInteger) results.get(2).getValue(), 
+                (String) results.get(3).getValue());
+    }
+
+    public String rawProducerAddr() throws ContractException {
+        final Function function = new Function(FUNC_RAWPRODUCERADDR, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+        return executeCallWithSingleValueReturn(function, String.class);
+    }
+
+    public TransactionReceipt setRawMaterial(String _rawProducerAddr, String _axleProducerAddr, BigInteger _totalRawWeight, String _batchId) {
+        final Function function = new Function(
+                FUNC_SETRAWMATERIAL, 
+                Arrays.<Type>asList(new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_rawProducerAddr), 
+                new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_axleProducerAddr), 
+                new org.fisco.bcos.sdk.abi.datatypes.generated.Uint256(_totalRawWeight), 
+                new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_batchId)), 
+                Collections.<TypeReference<?>>emptyList());
+        return executeTransaction(function);
+    }
+
+    public byte[] setRawMaterial(String _rawProducerAddr, String _axleProducerAddr, BigInteger _totalRawWeight, String _batchId, TransactionCallback callback) {
+        final Function function = new Function(
+                FUNC_SETRAWMATERIAL, 
+                Arrays.<Type>asList(new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_rawProducerAddr), 
+                new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_axleProducerAddr), 
+                new org.fisco.bcos.sdk.abi.datatypes.generated.Uint256(_totalRawWeight), 
+                new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_batchId)), 
+                Collections.<TypeReference<?>>emptyList());
+        return asyncExecuteTransaction(function, callback);
+    }
+
+    public String getSignedTransactionForSetRawMaterial(String _rawProducerAddr, String _axleProducerAddr, BigInteger _totalRawWeight, String _batchId) {
+        final Function function = new Function(
+                FUNC_SETRAWMATERIAL, 
+                Arrays.<Type>asList(new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_rawProducerAddr), 
+                new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_axleProducerAddr), 
+                new org.fisco.bcos.sdk.abi.datatypes.generated.Uint256(_totalRawWeight), 
+                new org.fisco.bcos.sdk.abi.datatypes.Utf8String(_batchId)), 
+                Collections.<TypeReference<?>>emptyList());
+        return createSignedTransaction(function);
+    }
+
+    public Tuple4<String, String, BigInteger, String> getSetRawMaterialInput(TransactionReceipt transactionReceipt) {
+        String data = transactionReceipt.getInput().substring(10);
+        final Function function = new Function(FUNC_SETRAWMATERIAL, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Uint256>() {}, new TypeReference<Utf8String>() {}));
+        List<Type> results = FunctionReturnDecoder.decode(data, function.getOutputParameters());
+        return new Tuple4<String, String, BigInteger, String>(
+
+                (String) results.get(0).getValue(), 
+                (String) results.get(1).getValue(), 
+                (BigInteger) results.get(2).getValue(), 
+                (String) results.get(3).getValue()
+                );
+    }
+
+    public BigInteger totalRawWeight() throws ContractException {
+        final Function function = new Function(FUNC_TOTALRAWWEIGHT, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
+        return executeCallWithSingleValueReturn(function, BigInteger.class);
+    }
+
+    public static RawMaterial load(String contractAddress, Client client, CryptoKeyPair credential) {
+        return new RawMaterial(contractAddress, client, credential);
+    }
+
+    public static RawMaterial deploy(Client client, CryptoKeyPair credential) throws ContractException {
+        return deploy(RawMaterial.class, client, credential, getBinary(client.getCryptoSuite()), "");
+    }
+}
