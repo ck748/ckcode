@@ -5,7 +5,7 @@
         <div class="image-overlay"></div>
         <img src="../assets/2.png" alt="钢铁检测系统" class="login-image">
         <div class="welcome-text">
-          <h2>中轴检测系统</h2>
+          <h2>智链溯源·先知系统</h2>
           <p>专业 · 精准 · 高效</p>
         </div>
       </div>
