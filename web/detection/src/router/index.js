@@ -36,6 +36,7 @@ const routes = [
             { path: '/camera', name: 'Camera', meta: { name: '摄像头监控' }, component: () => import('../components/camera.vue') },
             { path: '/person', name: 'Person', meta: { name: '个人中心' }, component: () => import('../components/person.vue') },
             { path: '/password', name: 'Password', meta: { name: '修改密码' }, component: () => import('../components/password.vue') },
+            { path: '/assembly', name: 'Assembly', meta: { name: '联盟链管理' }, component: () => import('../components/assembly.vue') }, // WeBase嵌入页面
         ]
     }
 ]
