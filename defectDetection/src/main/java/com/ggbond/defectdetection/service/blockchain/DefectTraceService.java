@@ -2,7 +2,7 @@ package com.ggbond.defectdetection.service.blockchain;
 
 import com.ggbond.defectdetection.pojo.Defection;
 import lombok.extern.slf4j.Slf4j;
-import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
