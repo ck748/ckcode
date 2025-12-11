@@ -746,7 +746,7 @@ export default {
     initRealtimeChart() {
       this.realtimeChart = echarts.init(this.$refs.realtimeChart);
       
-      // 生成实时数据
+      // 生成实时数据 - 初始波动范围调整为较小值
       const timeLabels = [];
       const efficiencyData = [];
       const qualityData = [];
@@ -755,8 +755,9 @@ export default {
         const hour = i.toString().padStart(2, '0');
         timeLabels.push(`${hour}:00`);
         
-        efficiencyData.push(Math.floor(Math.random() * 20) + 80);
-        qualityData.push(Math.floor(Math.random() * 15) + 85);
+        // 减小波动范围：从原来的 80-100 改为 88-96
+        efficiencyData.push(Math.floor(Math.random() * 8) + 88); // 88-96范围
+        qualityData.push(Math.floor(Math.random() * 6) + 90); // 90-96范围
       }
       
       this.updateRealtimeChart(timeLabels, efficiencyData, qualityData);
@@ -977,8 +978,9 @@ export default {
         const hour = i.toString().padStart(2, '0');
         timeLabels.push(`${hour}:00`);
         
-        efficiencyData.push(Math.floor(Math.random() * 20) + 80);
-        qualityData.push(Math.floor(Math.random() * 15) + 85);
+        // 减小波动范围
+        efficiencyData.push(Math.floor(Math.random() * 8) + 88); // 88-96范围
+        qualityData.push(Math.floor(Math.random() * 6) + 90); // 90-96范围
       }
       
       this.updateRealtimeChart(timeLabels, efficiencyData, qualityData);
@@ -1008,18 +1010,20 @@ export default {
       // 更新车间图表数据
       this.updateWorkshopCharts();
       
-      // 更新实时图表
+      // 更新实时图表 - 减小波动范围
       if (this.realtimeChart) {
         const option = this.realtimeChart.getOption();
         const efficiencyData = option.series[0].data;
         const qualityData = option.series[1].data;
         const timeLabels = option.xAxis[0].data;
         
-        // 移动数据点
+        // 移动数据点 - 减小波动范围
         efficiencyData.shift();
-        efficiencyData.push(Math.floor(Math.random() * 20) + 80);
+        // 减小波动范围：从原来的 80-100 改为 88-96
+        efficiencyData.push(Math.floor(Math.random() * 8) + 88);
         qualityData.shift();
-        qualityData.push(Math.floor(Math.random() * 15) + 85);
+        // 减小波动范围：从原来的 85-100 改为 90-96
+        qualityData.push(Math.floor(Math.random() * 6) + 90);
         
         // 更新时间标签
         const now = new Date();
@@ -1067,12 +1071,12 @@ export default {
           if (workshop.status === 'normal') {
             // 正常车间：在较高水平小幅波动
             const lastValue = currentData[currentData.length - 1] || 70;
-            const variation = Math.random() * 10 - 5; // -2到+2的变化 // -4到+4的变化
+            const variation = Math.random() * 10 - 5; // -5到+5的变化
             newValue = Math.max(55, Math.min(95, lastValue + variation));
           } else {
             // 异常车间：在较低水平随机波动
             const lastValue = currentData[currentData.length - 1] || 50;
-            const variation = Math.random() * 16 - 8; // -3到+3的变化 // -5到+5的变化
+            const variation = Math.random() * 16 - 8; // -8到+8的变化
             newValue = Math.max(35, Math.min(75, lastValue + variation));
           }
           

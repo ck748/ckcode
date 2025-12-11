@@ -48,11 +48,11 @@
             </template>
             <el-menu-item index="/info" class="submenu-item">
               <i class="el-icon-tickets submenu-icon"></i>
-              <span>历史检测</span>
+              <span>整体检测</span>
             </el-menu-item>
             <el-menu-item index="/annotation" class="submenu-item">
               <i class="el-icon-edit-outline submenu-icon"></i>
-              <span>数据标注</span>
+              <span>车间检测</span>
             </el-menu-item>
             <el-menu-item index="/charts" class="submenu-item">
               <i class="el-icon-data-analysis submenu-icon"></i>
