@@ -55,18 +55,18 @@ ai:
 # 区块链配置
 blockchain:
   # 是否启用区块链功能
-  enabled: true
+  enabled: false
   # FISCO BCOS节点配置(使用channel端口)
   peers: 192.168.1.106:20200  # channel_listen_port
   # 群组ID
   group-id: 1
-  # 证书路径(多个路径用逗号分隔)
+  # 证书路径
   cert-path: blockchain/conf
   # 私钥(Demo8的私钥)
   hex-private-key: 133c66ebc2e128e76a57f18da71e26688553e5f5a9a33ec452dd812570dac87f
   # 智能合约地址配置(Demo8的合约地址)
   contracts:
-    defect-trace: ""  # 缺陷溯源合约地址
+    defect-trace: ""  # 
     data-center: "0x9fc37936eafb1e0b9ad3fc968092e2c65ead5744"   # 数据中心合约地址
     workshop1: "0x058247030a450a840bd7ab3dd9246339ba3d1cf4"  # 车间1合约地址
     workshop2: "0x7990bb255f2ad841c598f374099462fa2e261097"  # 车间2合约地址
