@@ -108,44 +108,61 @@
           <div class="panel-subtitle">BLOCKCHAIN VISUALIZATION</div>
         </div>
         
-        <!-- 区块链可视化 -->
+        <!-- 双链区块链可视化 -->
         <div class="blockchain-visualization">
           <div class="visualization-container">
-            <!-- 连接线 -->
-            <div class="chain-line"></div>
+            <!-- 两条主链连接线 -->
+            <div class="chain-line main-chain-line"></div>
+            <div class="chain-line secondary-chain-line"></div>
             
-            <!-- 区块节点 -->
-            <div 
-              class="block-node" 
-              v-for="(block, index) in recentBlocks" 
-              :key="block.hash"
-              :style="getNodeStyle(index)"
-              @click="inspectBlock(block)"
-            >
-              <div class="node-core" :class="{active: selectedBlock?.hash === block.hash}">
-                <div class="node-pulse"></div>
-                <div class="node-content">
-                  <div class="node-number">#{{ block.number }}</div>
-                  <div class="node-time">{{ formatBlockTime(block.timestamp) }}</div>
+            <!-- 第一条链区块节点 -->
+            <div class="chain-nodes chain-1">
+              <div 
+                class="block-node" 
+                v-for="(block, index) in chain1Blocks" 
+                :key="'chain1-' + block.hash"
+                :style="getNodeStyle(index, 'chain1')"
+                @click="inspectBlock(block)"
+              >
+                <div class="node-core" :class="{active: selectedBlock?.hash === block.hash}">
+                  <div class="node-pulse"></div>
+                  <div class="node-content">
+                    <div class="node-number">#{{ block.number }}</div>
+                    <div class="node-time">{{ formatBlockTime(block.timestamp) }}</div>
+                  </div>
                 </div>
+                <div class="node-connection" v-if="index < chain1Blocks.length - 1"></div>
               </div>
-              <div class="node-connection" v-if="index < recentBlocks.length - 1"></div>
             </div>
-          </div>
-          
-          <!-- 区块链控制 -->
-          <div class="chain-controls">
-            <div class="control-btn" @click="rotateVisual(-15)">
-              <div class="control-icon">◀</div>
-              <div class="control-label">左旋</div>
+            
+            <!-- 第二条链区块节点 -->
+            <div class="chain-nodes chain-2">
+              <div 
+                class="block-node" 
+                v-for="(block, index) in chain2Blocks" 
+                :key="'chain2-' + block.hash"
+                :style="getNodeStyle(index, 'chain2')"
+                @click="inspectBlock(block)"
+              >
+                <div class="node-core secondary" :class="{active: selectedBlock?.hash === block.hash}">
+                  <div class="node-pulse"></div>
+                  <div class="node-content">
+                    <div class="node-number">#{{ block.number }}</div>
+                    <div class="node-time">{{ formatBlockTime(block.timestamp) }}</div>
+                  </div>
+                </div>
+                <div class="node-connection secondary" v-if="index < chain2Blocks.length - 1"></div>
+              </div>
             </div>
-            <div class="control-btn" @click="toggleAnimation">
-              <div class="control-icon">{{ isAnimating ? '⏸' : '▶' }}</div>
-              <div class="control-label">{{ isAnimating ? '暂停' : '动画' }}</div>
-            </div>
-            <div class="control-btn" @click="rotateVisual(15)">
-              <div class="control-icon">▶</div>
-              <div class="control-label">右旋</div>
+            
+            <!-- 链间连接线 -->
+            <div class="inter-chain-connections">
+              <div 
+                class="inter-chain-line" 
+                v-for="(_, index) in chain1Blocks" 
+                :key="'connection-' + index"
+                :style="getInterChainLineStyle(index)"
+              ></div>
             </div>
           </div>
         </div>
@@ -243,7 +260,7 @@
                 <div class="product-id-display">{{ traceResult.productId }}</div>
               </div>
               <div class="result-status">
-                <span class="status-badge complete">完整溯源</span>
+                <span class="status-badge" :class="traceResult.statusClass">{{ traceResult.traceStatus }}</span>
                 <span class="status-time">{{ traceResult.updateTime }}</span>
               </div>
             </div>
@@ -255,11 +272,15 @@
               </div>
               <div class="quick-info-item">
                 <span class="info-label">生产状态</span>
-                <span class="info-value success">{{ traceResult.status }}</span>
+                <span class="info-value" :class="traceResult.productionStatusClass">
+                  {{ traceResult.productionStatus }}
+                </span>
               </div>
               <div class="quick-info-item">
                 <span class="info-label">质量评级</span>
-                <span class="info-value excellent">{{ traceResult.quality }}</span>
+                <span class="info-value" :class="traceResult.qualityClass">
+                  {{ traceResult.quality }}
+                </span>
               </div>
             </div>
 
@@ -392,8 +413,6 @@ export default {
       dataStreaming: true,
       currentTime: '',
       syncProgress: 100,
-      isAnimating: true,
-      visualRotation: 0,
       
       // 消息提示
       showMessage: false,
@@ -472,8 +491,9 @@ export default {
         duration: '处理时长'
       },
       
-      // 区块数据
-      recentBlocks: [],
+      // 两条链的区块数据
+      chain1Blocks: [],
+      chain2Blocks: [],
       
       // 图表实例
       chainChart: null,
@@ -488,11 +508,357 @@ export default {
       chartUpdateTimer: null,
       
       // 当前区块高度
-      currentBlockHeight: 18472
+      currentBlockHeight: 18472,
+      
+      // 溯源结果模板
+      traceTemplates: [
+        {
+          id: 'template-1',
+          productId: 'AX20231215001',
+          batch: 'BATCH-1220',
+          productionStatus: '已完成',
+          productionStatusClass: 'success',
+          quality: 'A+',
+          qualityClass: 'excellent',
+          traceStatus: '完整溯源',
+          statusClass: 'complete',
+          updateTime: '',
+          steps: [
+            {
+              stage: '原料入库',
+              icon: '📥',
+              time: '2023-12-15 08:30',
+              description: '40Cr钢材入库，批次号：MC202312001，检验合格，材料规格符合要求',
+              operator: '张工',
+              equipment: '行车-001'
+            },
+            {
+              stage: '切割下料',
+              icon: '✂️',
+              time: '2023-12-15 09:15',
+              description: '精密切割，尺寸控制±0.1mm，表面光滑无毛刺，切割面平整',
+              operator: '李工',
+              equipment: '数控切割机-002'
+            },
+            {
+              stage: '压花键',
+              icon: '⚙️',
+              time: '2023-12-15 10:30',
+              description: '花键压制，精度控制±0.02mm，齿形完整清晰，尺寸精度达标',
+              operator: '王工',
+              equipment: '压力机-003'
+            },
+            {
+              stage: '热处理',
+              icon: '🔥',
+              time: '2023-12-15 14:00',
+              description: '调质处理，硬度HRC28-32，组织均匀，达到技术要求',
+              operator: '赵工',
+              equipment: '热处理炉-004'
+            },
+            {
+              stage: '精加工',
+              icon: '⚡',
+              time: '2023-12-15 15:45',
+              description: '数控精车，表面粗糙度Ra0.8，尺寸精准符合图纸要求',
+              operator: '孙工',
+              equipment: '数控车床-005'
+            },
+            {
+              stage: '探伤检测',
+              icon: '🔍',
+              time: '2023-12-15 16:30',
+              description: '超声波探伤，无缺陷报告，质量达标，合格品入库',
+              operator: '周工',
+              equipment: '探伤仪-006'
+            },
+            {
+              stage: '质检包装',
+              icon: '📦',
+              time: '2023-12-15 17:15',
+              description: '最终质量检验，防锈包装，入库待发',
+              operator: '钱工',
+              equipment: '包装线-007'
+            }
+          ]
+        },
+        {
+          id: 'template-2',
+          productId: 'AX20231214988',
+          batch: 'BATCH-1219',
+          productionStatus: '有缺陷',
+          productionStatusClass: 'warning',
+          quality: 'C',
+          qualityClass: 'poor',
+          traceStatus: '存在异常',
+          statusClass: 'warning',
+          updateTime: '',
+          steps: [
+            {
+              stage: '原料入库',
+              icon: '📥',
+              time: '2023-12-14 09:00',
+              description: '45#钢材入库，检验发现表面有轻微锈蚀，需要除锈处理',
+              operator: '张工',
+              equipment: '行车-001'
+            },
+            {
+              stage: '切割下料',
+              icon: '✂️',
+              time: '2023-12-14 10:15',
+              description: '切割过程中出现轻微偏差，尺寸超差±0.3mm，需要返工',
+              operator: '李工',
+              equipment: '数控切割机-002'
+            },
+            {
+              stage: '压花键',
+              icon: '⚙️',
+              time: '2023-12-14 11:45',
+              description: '花键压制，齿形部分不清晰，需要重新压制',
+              operator: '王工',
+              equipment: '压力机-003'
+            },
+            {
+              stage: '热处理',
+              icon: '🔥',
+              time: '2023-12-14 15:30',
+              description: '调质处理，硬度HRC25-28，略低于技术要求',
+              operator: '赵工',
+              equipment: '热处理炉-004'
+            },
+            {
+              stage: '精加工',
+              icon: '⚡',
+              time: '2023-12-14 16:45',
+              description: '数控精车，表面粗糙度Ra1.6，需要进一步抛光',
+              operator: '孙工',
+              equipment: '数控车床-005'
+            },
+            {
+              stage: '探伤检测',
+              icon: '🔍',
+              time: '2023-12-14 17:30',
+              description: '超声波探伤发现微小裂纹，需要修复处理',
+              operator: '周工',
+              equipment: '探伤仪-006'
+            },
+            {
+              stage: '质检包装',
+              icon: '📦',
+              time: '2023-12-14 18:15',
+              description: '质量检验不合格，标识为缺陷品，隔离存放',
+              operator: '钱工',
+              equipment: '质检台-008'
+            }
+          ]
+        },
+        {
+          id: 'template-3',
+          productId: 'AX20231214990',
+          batch: 'BATCH-1221',
+          productionStatus: '返工中',
+          productionStatusClass: 'processing',
+          quality: 'B',
+          qualityClass: 'good',
+          traceStatus: '部分溯源',
+          statusClass: 'partial',
+          updateTime: '',
+          steps: [
+            {
+              stage: '原料入库',
+              icon: '📥',
+              time: '2023-12-16 08:45',
+              description: '42CrMo钢材入库，批次号：MC202312003，检验合格',
+              operator: '张工',
+              equipment: '行车-001'
+            },
+            {
+              stage: '切割下料',
+              icon: '✂️',
+              time: '2023-12-16 09:30',
+              description: '切割精度达标，尺寸控制良好',
+              operator: '李工',
+              equipment: '数控切割机-002'
+            },
+            {
+              stage: '压花键',
+              icon: '⚙️',
+              time: '2023-12-16 10:45',
+              description: '花键压制质量良好，精度符合要求',
+              operator: '王工',
+              equipment: '压力机-003'
+            },
+            {
+              stage: '热处理',
+              icon: '🔥',
+              time: '2023-12-16 14:30',
+              description: '热处理过程中温度控制偏差，需要重新调整参数',
+              operator: '赵工',
+              equipment: '热处理炉-004'
+            },
+            {
+              stage: '返工处理',
+              icon: '🔧',
+              time: '2023-12-16 15:15',
+              description: '对热处理工序进行返工，调整工艺参数',
+              operator: '赵工',
+              equipment: '热处理炉-004'
+            },
+            {
+              stage: '精加工',
+              icon: '⚡',
+              time: '2023-12-16 16:00',
+              description: '精加工工序待进行，等待返工完成',
+              operator: '孙工',
+              equipment: '数控车床-005'
+            }
+          ]
+        },
+        {
+          id: 'template-4',
+          productId: 'AX20231214992',
+          batch: 'BATCH-1222',
+          productionStatus: '待检验',
+          productionStatusClass: 'pending',
+          quality: '待定',
+          qualityClass: 'pending',
+          traceStatus: '进行中',
+          statusClass: 'processing',
+          updateTime: '',
+          steps: [
+            {
+              stage: '原料入库',
+              icon: '📥',
+              time: '2023-12-17 08:30',
+              description: '40Cr钢材入库，批次号：MC202312004，检验合格',
+              operator: '张工',
+              equipment: '行车-001'
+            },
+            {
+              stage: '切割下料',
+              icon: '✂️',
+              time: '2023-12-17 09:45',
+              description: '切割工序完成，尺寸精度符合要求',
+              operator: '李工',
+              equipment: '数控切割机-002'
+            },
+            {
+              stage: '压花键',
+              icon: '⚙️',
+              time: '2023-12-17 11:00',
+              description: '花键压制完成，齿形清晰度良好',
+              operator: '王工',
+              equipment: '压力机-003'
+            },
+            {
+              stage: '热处理',
+              icon: '🔥',
+              time: '2023-12-17 14:15',
+              description: '热处理工序进行中，预计16:00完成',
+              operator: '赵工',
+              equipment: '热处理炉-004'
+            },
+            {
+              stage: '精加工',
+              icon: '⚡',
+              time: '2023-12-17 16:30',
+              description: '精加工工序安排中',
+              operator: '孙工',
+              equipment: '数控车床-005'
+            },
+            {
+              stage: '探伤检测',
+              icon: '🔍',
+              time: '待进行',
+              description: '等待精加工完成后进行探伤检测',
+              operator: '周工',
+              equipment: '探伤仪-006'
+            }
+          ]
+        },
+        {
+          id: 'template-5',
+          productId: 'AX20231214995',
+          batch: 'BATCH-1223',
+          productionStatus: '已发货',
+          productionStatusClass: 'shipped',
+          quality: 'A',
+          qualityClass: 'excellent',
+          traceStatus: '完整溯源',
+          statusClass: 'complete',
+          updateTime: '',
+          steps: [
+            {
+              stage: '原料入库',
+              icon: '📥',
+              time: '2023-12-13 08:15',
+              description: '40Cr钢材入库，批次号：MC202312005，检验优秀',
+              operator: '张工',
+              equipment: '行车-001'
+            },
+            {
+              stage: '切割下料',
+              icon: '✂️',
+              time: '2023-12-13 09:30',
+              description: '精密切割，尺寸控制±0.05mm，表面质量优秀',
+              operator: '李工',
+              equipment: '数控切割机-002'
+            },
+            {
+              stage: '压花键',
+              icon: '⚙️',
+              time: '2023-12-13 11:00',
+              description: '花键压制精度极高，齿形完美清晰',
+              operator: '王工',
+              equipment: '压力机-003'
+            },
+            {
+              stage: '热处理',
+              icon: '🔥',
+              time: '2023-12-13 14:30',
+              description: '调质处理优秀，硬度HRC30-32，组织非常均匀',
+              operator: '赵工',
+              equipment: '热处理炉-004'
+            },
+            {
+              stage: '精加工',
+              icon: '⚡',
+              time: '2023-12-13 16:00',
+              description: '数控精车，表面粗糙度Ra0.4，达到精密级要求',
+              operator: '孙工',
+              equipment: '数控车床-005'
+            },
+            {
+              stage: '探伤检测',
+              icon: '🔍',
+              time: '2023-12-13 17:15',
+              description: '超声波探伤无任何缺陷，质量优秀',
+              operator: '周工',
+              equipment: '探伤仪-006'
+            },
+            {
+              stage: '质检包装',
+              icon: '📦',
+              time: '2023-12-13 18:00',
+              description: '最终检验为A级品，精密包装',
+              operator: '钱工',
+              equipment: '包装线-007'
+            },
+            {
+              stage: '出库发货',
+              icon: '🚚',
+              time: '2023-12-14 09:30',
+              description: '产品已出库，发往客户仓库，物流单号：LD20231214001',
+              operator: '运输部',
+              equipment: '物流系统'
+            }
+          ]
+        }
+      ]
     };
   },
   created() {
-    this.initializeRecentBlocks();
+    this.initializeChains();
   },
   mounted() {
     this.initTime();
@@ -502,8 +868,8 @@ export default {
     this.loadRecentQueries();
     
     // 默认显示第一个区块的详情
-    if (this.recentBlocks.length > 0) {
-      this.selectedBlock = this.recentBlocks[0];
+    if (this.chain1Blocks.length > 0) {
+      this.selectedBlock = this.chain1Blocks[0];
     }
     
     // 窗口大小调整监听
@@ -517,10 +883,12 @@ export default {
     window.removeEventListener('resize', this.handleResize);
   },
   methods: {
-    // 初始化最近区块
-    initializeRecentBlocks() {
+    // 初始化双链
+    initializeChains() {
       const now = Date.now();
-      this.recentBlocks = [
+      
+      // 第一条链
+      this.chain1Blocks = [
         {
           number: this.currentBlockHeight,
           hash: '0x7d3f8a1b4c9e2f6a5d8b0e7c3f9a1b4c8e2d6f5a',
@@ -571,6 +939,129 @@ export default {
             pressure: '100MPa',
             duration: '35min'
           }
+        },
+        {
+          number: this.currentBlockHeight - 3,
+          hash: '0x4a0c592d7b2e6a4f8c3d1a5e0b6a1c7d2e8f3b4a',
+          productId: 'AX20231214997',
+          timestamp: now - 720000,
+          data: {
+            product: '工业半轴',
+            type: 'B型',
+            specification: 'Φ50×1500mm',
+            material: '45#钢',
+            process: '热处理',
+            quality: 'B级',
+            temperature: '860℃',
+            pressure: '115MPa',
+            duration: '50min'
+          }
+        },
+        {
+          number: this.currentBlockHeight - 4,
+          hash: '0x3f0b4a1c6d2e5a3f7b2c0d9e8a1b5c4d7e3f2a1b',
+          productId: 'AX20231214996',
+          timestamp: now - 900000,
+          data: {
+            product: '工业半轴',
+            type: 'C型',
+            specification: 'Φ40×1000mm',
+            material: '42CrMo',
+            process: '切割',
+            quality: 'A级',
+            temperature: '810℃',
+            pressure: '105MPa',
+            duration: '38min'
+          }
+        }
+      ];
+      
+      // 第二条链
+      this.chain2Blocks = [
+        {
+          number: this.currentBlockHeight - 10,
+          hash: '0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b',
+          productId: 'AX20231214990',
+          timestamp: now - 720000,
+          data: {
+            product: '工业半轴',
+            type: 'B型',
+            specification: 'Φ50×1500mm',
+            material: '45#钢',
+            process: '热处理',
+            quality: 'B级',
+            temperature: '860℃',
+            pressure: '115MPa',
+            duration: '50min'
+          }
+        },
+        {
+          number: this.currentBlockHeight - 11,
+          hash: '0x8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d',
+          productId: 'AX20231214989',
+          timestamp: now - 900000,
+          data: {
+            product: '工业半轴',
+            type: 'C型',
+            specification: 'Φ40×1000mm',
+            material: '42CrMo',
+            process: '切割',
+            quality: 'A级',
+            temperature: '810℃',
+            pressure: '105MPa',
+            duration: '38min'
+          }
+        },
+        {
+          number: this.currentBlockHeight - 12,
+          hash: '0x7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f',
+          productId: 'AX20231214988',
+          timestamp: now - 1080000,
+          data: {
+            product: '工业半轴',
+            type: 'A型',
+            specification: 'Φ45×1200mm',
+            material: '40Cr',
+            process: '压花键',
+            quality: 'C级',
+            temperature: '830℃',
+            pressure: '112MPa',
+            duration: '42min'
+          }
+        },
+        {
+          number: this.currentBlockHeight - 13,
+          hash: '0x6d7c8b9a0f1e2d3c4b5a6f7e8d9c0b1a2f3e4d5c',
+          productId: 'AX20231214987',
+          timestamp: now - 1260000,
+          data: {
+            product: '工业半轴',
+            type: 'A型',
+            specification: 'Φ45×1200mm',
+            material: '40Cr',
+            process: '精加工',
+            quality: 'A级',
+            temperature: '840℃',
+            pressure: '108MPa',
+            duration: '48min'
+          }
+        },
+        {
+          number: this.currentBlockHeight - 14,
+          hash: '0x5c6b7a8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b',
+          productId: 'AX20231214986',
+          timestamp: now - 1440000,
+          data: {
+            product: '工业半轴',
+            type: 'B型',
+            specification: 'Φ50×1500mm',
+            material: '45#钢',
+            process: '探伤',
+            quality: 'B级',
+            temperature: '850℃',
+            pressure: '118MPa',
+            duration: '52min'
+          }
         }
       ];
     },
@@ -605,20 +1096,36 @@ export default {
       this.timeInterval = setInterval(updateTime, 1000);
     },
     
-    // 初始化图表 - 优化波动幅度
+    // 初始化图表 - 正常折线波动
     initCharts() {
       const chartDom = document.getElementById('chainChart');
       if (!chartDom) return;
       
       this.chainChart = echarts.init(chartDom);
       
-      // 初始化图表数据 - 减小波动幅度
+      // 初始化图表数据 - 创建正常的折线波动
       this.chartData = Array.from({ length: 60 }, (_, i) => {
+        // 正常波动范围：15-25
         const base = 20;
-        // 使用更平缓的正弦波和更小的随机波动
-        const wave = Math.sin(i / 15) * 8; // 减少振幅
-        const random = Math.random() * 4; // 减小随机波动范围
-        return Math.max(10, Math.min(30, base + wave + random));
+        // 创建有规律的波动，每12个点一个周期
+        const cycle = Math.floor(i / 12) % 3;
+        let wave = 0;
+        
+        if (cycle === 0) {
+          // 上升趋势
+          wave = Math.sin(i / 10) * 3;
+        } else if (cycle === 1) {
+          // 平稳趋势
+          wave = Math.sin(i / 15) * 2;
+        } else {
+          // 下降趋势
+          wave = -Math.sin(i / 8) * 3;
+        }
+        
+        // 添加少量随机波动
+        const random = (Math.random() - 0.5) * 1.5;
+        
+        return Math.max(15, Math.min(25, base + wave + random));
       });
       
       const option = {
@@ -657,8 +1164,8 @@ export default {
             color: 'rgba(255, 255, 255, 0.5)',
             fontSize: 12
           },
-          min: 10,
-          max: 30,
+          min: 15,
+          max: 25,
           axisLine: {
             show: false
           },
@@ -676,7 +1183,7 @@ export default {
         series: [{
           type: 'line',
           data: this.chartData,
-          smooth: true,
+          smooth: false, // 改为折线图
           symbol: 'circle',
           symbolSize: 4,
           lineStyle: {
@@ -733,22 +1240,27 @@ export default {
       this.chainChart.setOption(option);
     },
     
-    // 更新图表数据 - 减小波动
+    // 更新图表数据 - 正常折线波动
     updateChartData() {
       if (!this.chainChart) return;
       
-      // 平滑地更新数据，减小波动
+      // 移除第一个数据点（5个区块才消失一个的逻辑在区块链数据流中处理）
       this.chartData.shift();
       
-      // 基于当前数据计算新值，保持趋势平稳
+      // 生成新的数据点，保持正常的折线波动
       const lastValue = this.chartData[this.chartData.length - 1] || 20;
       const base = 20;
-      const wave = Math.sin(Date.now() / 15000) * 6; // 进一步减小振幅
-      const random = (Math.random() - 0.5) * 3; // 减小随机波动
+      
+      // 基于时间创建有规律的波动
+      const timeFactor = Date.now() / 30000; // 每30秒一个周期
+      let wave = Math.sin(timeFactor) * 2;
+      
+      // 添加少量随机波动
+      const random = (Math.random() - 0.5) * 2;
       
       // 限制波动范围
       let newValue = base + wave + random;
-      newValue = Math.max(12, Math.min(28, newValue)); // 限制范围
+      newValue = Math.max(16, Math.min(24, newValue));
       
       // 平滑过渡
       const smoothValue = lastValue * 0.7 + newValue * 0.3;
@@ -810,10 +1322,26 @@ export default {
           }
         };
         
-        // 添加到最近区块列表
-        this.recentBlocks.unshift(newBlock);
-        if (this.recentBlocks.length > 5) {
-          this.recentBlocks.pop();
+        // 添加到第一条链
+        this.chain1Blocks.unshift(newBlock);
+        // 五个区块才消失一个
+        if (this.chain1Blocks.length > 5) {
+          this.chain1Blocks.pop();
+        }
+        
+        // 每两个区块添加一个到第二条链
+        if (this.currentBlockHeight % 2 === 0) {
+          const chain2Block = {...newBlock};
+          chain2Block.number = this.currentBlockHeight - 5;
+          chain2Block.hash = '0x' + Array.from({ length: 40 }, () => 
+            Math.floor(Math.random() * 16).toString(16)
+          ).join('');
+          
+          this.chain2Blocks.unshift(chain2Block);
+          // 五个区块才消失一个
+          if (this.chain2Blocks.length > 5) {
+            this.chain2Blocks.pop();
+          }
         }
         
         // 更新统计数据
@@ -827,9 +1355,9 @@ export default {
         this.updateChartData();
         
         // 如果当前选中的区块是最新的，则自动更新详情
-        if (this.selectedBlock && this.selectedBlock.number === this.recentBlocks[1]?.number) {
+        if (this.selectedBlock && this.selectedBlock.number === this.chain1Blocks[1]?.number) {
           setTimeout(() => {
-            this.selectedBlock = this.recentBlocks[0];
+            this.selectedBlock = this.chain1Blocks[0];
           }, 500);
         }
         
@@ -897,28 +1425,29 @@ export default {
     },
     
     // 获取节点样式
-    getNodeStyle(index) {
+    getNodeStyle(index, chain) {
       const baseDelay = index * 0.1;
-      const translateX = index * 70;
-      const rotation = this.visualRotation;
+      const translateX = index * 80;
+      const translateY = chain === 'chain1' ? -50 : 30; // 向上调整位置
       const scale = 1 + (index * 0.05);
       
       return {
-        transform: `translateX(${translateX}px) rotateY(${rotation}deg) scale(${scale})`,
+        transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
         animationDelay: `${baseDelay}s`,
         zIndex: 10 - index
       };
     },
     
-    // 旋转可视化
-    rotateVisual(degrees) {
-      this.visualRotation += degrees;
-    },
-    
-    // 切换动画
-    toggleAnimation() {
-      this.isAnimating = !this.isAnimating;
-      this.showMessageFn(this.isAnimating ? '区块链动画已启动' : '区块链动画已暂停', 'info');
+    // 获取链间连接线样式
+    getInterChainLineStyle(index) {
+      const translateX = index * 80 + 35;
+      const height = 80; // 两条链之间的距离
+      
+      return {
+        left: `${translateX}px`,
+        height: `${height}px`,
+        animationDelay: `${index * 0.1}s`
+      };
     },
     
     // 切换时间范围
@@ -933,7 +1462,7 @@ export default {
       this.showMessageFn(`已选中区块 #${block.number}`, 'info');
     },
     
-    // 搜索溯源
+    // 搜索溯源 - 随机选择模板
     searchTrace() {
       if (!this.queryId.trim()) {
         this.showMessageFn('请输入产品ID或批次号', 'warning');
@@ -943,79 +1472,14 @@ export default {
       // 保存到最近查询
       this.addRecentQuery(this.queryId);
       
-      // 模拟溯源结果
+      // 随机选择一个溯源模板
+      const randomTemplate = this.traceTemplates[Math.floor(Math.random() * this.traceTemplates.length)];
+      
+      // 创建溯源结果
       this.traceResult = {
+        ...randomTemplate,
         productId: this.queryId,
-        batch: 'BATCH-1220',
-        status: '已完成',
-        quality: 'A+',
-        updateTime: this.formatTime(Date.now()),
-        steps: [
-          {
-            stage: '原料入库',
-            icon: '📥',
-            time: '2023-12-15 08:30',
-            description: '40Cr钢材入库，批次号：MC202312001，检验合格，材料规格符合要求',
-            operator: '张工',
-            equipment: '行车-001'
-          },
-          {
-            stage: '切割下料',
-            icon: '✂️',
-            time: '2023-12-15 09:15',
-            description: '精密切割，尺寸控制±0.1mm，表面光滑无毛刺',
-            operator: '李工',
-            equipment: '数控切割机-002'
-          },
-          {
-            stage: '压花键',
-            icon: '⚙️',
-            time: '2023-12-15 10:30',
-            description: '花键压制，精度控制±0.02mm，齿形完整清晰',
-            operator: '王工',
-            equipment: '压力机-003'
-          },
-          {
-            stage: '热处理',
-            icon: '🔥',
-            time: '2023-12-15 14:00',
-            description: '调质处理，硬度HRC28-32，组织均匀，达到技术要求',
-            operator: '赵工',
-            equipment: '热处理炉-004'
-          },
-          {
-            stage: '精加工',
-            icon: '⚡',
-            time: '2023-12-15 15:45',
-            description: '数控精车，表面粗糙度Ra0.8，尺寸精准符合图纸要求',
-            operator: '孙工',
-            equipment: '数控车床-005'
-          },
-          {
-            stage: '探伤检测',
-            icon: '🔍',
-            time: '2023-12-15 16:30',
-            description: '超声波探伤，无缺陷报告，质量达标，合格品入库',
-            operator: '周工',
-            equipment: '探伤仪-006'
-          },
-          {
-            stage: '质检包装',
-            icon: '📦',
-            time: '2023-12-15 17:15',
-            description: '最终质量检验，防锈包装，入库待发',
-            operator: '钱工',
-            equipment: '包装线-007'
-          },
-          {
-            stage: '出库发货',
-            icon: '🚚',
-            time: '2023-12-15 18:00',
-            description: '产品出库，发往客户仓库，物流信息已记录',
-            operator: '运输部',
-            equipment: '物流系统'
-          }
-        ]
+        updateTime: this.formatTime(Date.now())
       };
       
       // 确保内容完全显示
@@ -1026,7 +1490,7 @@ export default {
         }
       });
       
-      this.showMessageFn(`已找到产品 ${this.queryId} 的完整溯源记录`, 'success');
+      this.showMessageFn(`已找到产品 ${this.queryId} 的溯源记录`, 'success');
     },
     
     // 添加最近查询
@@ -1598,7 +2062,6 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
   min-height: 0;
 }
 
@@ -1608,14 +2071,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  perspective: 1000px;
   min-height: 0;
   overflow: visible;
 }
 
+/* 两条主链连接线 */
 .chain-line {
   position: absolute;
-  top: 50%;
   left: 10%;
   right: 10%;
   height: 2px;
@@ -1625,13 +2087,42 @@ export default {
     rgba(0, 242, 255, 0.6),
     transparent
   );
-  transform: translateY(-50%);
   z-index: 1;
+}
+
+.main-chain-line {
+  top: 35%; /* 向上调整位置 */
+  transform: translateY(-50%);
+}
+
+.secondary-chain-line {
+  top: 65%; /* 向上调整位置 */
+  transform: translateY(-50%);
+}
+
+/* 链容器 */
+.chain-nodes {
+  position: absolute;
+  top: 0;
+  left: 10%;
+  width: 80%;
+  height: 100%;
+  z-index: 2;
+}
+
+.chain-1 {
+  top: 35%; /* 向上调整位置 */
+  transform: translateY(-50%);
+}
+
+.chain-2 {
+  top: 65%; /* 向上调整位置 */
+  transform: translateY(-50%);
 }
 
 .block-node {
   position: absolute;
-  left: 10%;
+  left: 0;
   top: 50%;
   transform: translateY(-50%);
   transition: all 0.5s ease;
@@ -1655,6 +2146,15 @@ export default {
   transition: all 0.3s ease;
   animation: nodeFloat 3s ease-in-out infinite;
   position: relative;
+}
+
+.node-core.secondary {
+  border-color: rgba(0, 255, 153, 0.6);
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(0, 255, 153, 0.3),
+    rgba(0, 80, 40, 0.8)
+  );
 }
 
 @keyframes nodeFloat {
@@ -1704,6 +2204,10 @@ export default {
   text-shadow: 0 0 8px rgba(0, 242, 255, 0.4);
 }
 
+.node-core.secondary .node-number {
+  color: #00ff99;
+}
+
 .node-time {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.6);
@@ -1723,41 +2227,44 @@ export default {
   transform: translateY(-50%);
 }
 
-.chain-controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-shrink: 0;
+.node-connection.secondary {
+  background: linear-gradient(90deg, 
+    rgba(0, 255, 153, 0.6),
+    rgba(0, 255, 153, 0.3)
+  );
 }
 
-.chain-controls .control-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 12px;
-  background: rgba(15, 23, 54, 0.8);
-  border: 1px solid rgba(0, 242, 255, 0.3);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 60px;
+/* 链间连接线 */
+.inter-chain-connections {
+  position: absolute;
+  top: 35%; /* 向上调整位置 */
+  left: 10%;
+  width: 80%;
+  height: 30%; /* 增加高度以匹配新的位置 */
+  z-index: 1;
 }
 
-.chain-controls .control-btn:hover {
-  background: rgba(0, 242, 255, 0.1);
-  border-color: #00f2ff;
-  transform: translateY(-1px);
+.inter-chain-line {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 242, 255, 0.4),
+    rgba(0, 255, 153, 0.4),
+    rgba(0, 242, 255, 0.4)
+  );
+  animation: interChainPulse 3s infinite;
+  opacity: 0.5;
 }
 
-.control-icon {
-  font-size: 16px;
-  color: #00f2ff;
-  margin-bottom: 4px;
-}
-
-.control-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
+@keyframes interChainPulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* 区块详情 */
@@ -2102,12 +2609,31 @@ export default {
   padding: 4px 8px;
   font-size: 11px;
   border-radius: 12px;
+  border: 1px solid;
 }
 
 .status-badge.complete {
   background: rgba(0, 255, 153, 0.1);
   color: #00ff99;
-  border: 1px solid rgba(0, 255, 153, 0.3);
+  border-color: rgba(0, 255, 153, 0.3);
+}
+
+.status-badge.warning {
+  background: rgba(255, 204, 0, 0.1);
+  color: #ffcc00;
+  border-color: rgba(255, 204, 0, 0.3);
+}
+
+.status-badge.partial {
+  background: rgba(0, 242, 255, 0.1);
+  color: #00f2ff;
+  border-color: rgba(0, 242, 255, 0.3);
+}
+
+.status-badge.processing {
+  background: rgba(102, 153, 255, 0.1);
+  color: #6699ff;
+  border-color: rgba(102, 153, 255, 0.3);
 }
 
 .status-time {
@@ -2148,8 +2674,36 @@ export default {
   color: #00ff99;
 }
 
-.info-value.excellent {
+.info-value.warning {
   color: #ffcc00;
+}
+
+.info-value.processing {
+  color: #6699ff;
+}
+
+.info-value.pending {
+  color: #cccccc;
+}
+
+.info-value.shipped {
+  color: #9966ff;
+}
+
+.info-value.excellent {
+  color: #00ff99;
+}
+
+.info-value.good {
+  color: #6699ff;
+}
+
+.info-value.poor {
+  color: #ff6666;
+}
+
+.info-value.pending {
+  color: #cccccc;
 }
 
 /* 时间线容器 */
