@@ -1,8 +1,8 @@
 package com.ggbond.defectdetection.service.blockchain;
 
 import lombok.extern.slf4j.Slf4j;
-import org.fisco.bcos.sdk.v3.client.Client;
-import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -57,9 +57,9 @@ public class BlockchainService {
     }
 
     /**
-     * 检查交易是否成功
+     * 检查交易是否成功 (2.x SDK)
      */
     public boolean isTransactionSuccess(TransactionReceipt receipt) {
-        return receipt != null && receipt.getStatus() == 0;
+        return receipt != null && "0x0".equals(receipt.getStatus());
     }
 }

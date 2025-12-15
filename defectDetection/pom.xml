@@ -188,11 +188,11 @@
             <version>4.0.1</version>
         </dependency>
 
-        <!-- FISCO BCOS Java SDK -->
+        <!-- FISCO BCOS Java SDK 2.x (兼容2.11节点) -->
         <dependency>
             <groupId>org.fisco-bcos.java-sdk</groupId>
             <artifactId>fisco-bcos-java-sdk</artifactId>
-            <version>3.6.0</version>
+            <version>2.9.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
