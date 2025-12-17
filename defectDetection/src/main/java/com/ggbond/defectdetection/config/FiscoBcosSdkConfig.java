@@ -7,6 +7,7 @@ import org.fisco.bcos.sdk.config.ConfigOption;
 import org.fisco.bcos.sdk.config.exceptions.ConfigException;
 import org.fisco.bcos.sdk.config.model.ConfigProperty;
 import org.fisco.bcos.sdk.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -106,5 +107,14 @@ public class FiscoBcosSdkConfig {
         } catch (Exception e) {
             log.warn("私钥加载失败,使用随机私钥: {}", e.getMessage());
         }
+    }
+    
+    /**
+     * 创建CryptoKeyPair Bean
+     * 使其可以被注入到其他服务中
+     */
+    @Bean
+    public CryptoKeyPair cryptoKeyPair(Client client) {
+        return client.getCryptoSuite().getCryptoKeyPair();
     }
 }

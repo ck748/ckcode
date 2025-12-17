@@ -74,6 +74,16 @@
         </div>
         <div class="result-actions">
           <el-button
+            type="primary"
+            icon="el-icon-cpu"
+            size="small"
+            @click="handleAIAnalysis"
+            :loading="aiAnalysisLoading"
+            style="margin-right: 10px;"
+          >
+            <span>🤖 AI分析</span>
+          </el-button>
+          <el-button
             type="success"
             icon="el-icon-download"
             size="small"
@@ -294,6 +304,41 @@
                   </div>
                 </div>
               </el-col>
+              <!-- 切割下料工序 -->
+              <el-col :span="24" v-if="traceData.workshop1?.cutting">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #409EFF;">① 切割下料</div>
+                  <div class="detail-value">
+                    <span>材料批次：{{ traceData.workshop1.cutting.materialBatch }} | </span>
+                    <span>切割尺寸：{{ traceData.workshop1.cutting.cutSize }} | </span>
+                    <span>切割速度：{{ traceData.workshop1.cutting.cutSpeed }} | </span>
+                    <span>操作员：{{ traceData.workshop1.cutting.operator }}</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 压花键工序 -->
+              <el-col :span="24" v-if="traceData.workshop1?.pressing">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #409EFF;">② 压花键</div>
+                  <div class="detail-value">
+                    <span>压力：{{ traceData.workshop1.pressing.pressure }} | </span>
+                    <span>花键尺寸：{{ traceData.workshop1.pressing.splineSize }} | </span>
+                    <span>设备编号：{{ traceData.workshop1.pressing.equipmentNo }}</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 锻造工序 -->
+              <el-col :span="24" v-if="traceData.workshop1?.forging">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #409EFF;">③ 锻造</div>
+                  <div class="detail-value">
+                    <span>锻造温度：{{ traceData.workshop1.forging.forgingTemp }} | </span>
+                    <span>压力：{{ traceData.workshop1.forging.pressure }} | </span>
+                    <span>保压时间：{{ traceData.workshop1.forging.holdTime }} | </span>
+                    <span>缺陷：<el-tag :type="traceData.workshop1.forging.defect === '无' ? 'success' : 'danger'" size="mini">{{ traceData.workshop1.forging.defect }}</el-tag></span>
+                  </div>
+                </div>
+              </el-col>
             </el-row>
           </div>
 
@@ -349,6 +394,51 @@
                       {{ traceData.workshop2.hardnessTest.value || '--' }} HRC
                     </span>
                     <span v-else>--</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 钻中心孔工序 -->
+              <el-col :span="24" v-if="traceData.workshop2?.drilling">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #67C23A;">① 钻中心孔</div>
+                  <div class="detail-value">
+                    <span>孔尺寸：{{ traceData.workshop2.drilling.holeSize }} | </span>
+                    <span>孔深：{{ traceData.workshop2.drilling.holeDepth }} | </span>
+                    <span>设备转速：{{ traceData.workshop2.drilling.equipmentSpeed }}</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 调质热处理工序 -->
+              <el-col :span="24" v-if="traceData.workshop2?.heatTreatment">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #67C23A;">② 调质热处理</div>
+                  <div class="detail-value">
+                    <span>加热温度：{{ traceData.workshop2.heatTreatment.heatingTemp }} | </span>
+                    <span>保温时间：{{ traceData.workshop2.heatTreatment.holdTime }} | </span>
+                    <span>冷却速率：{{ traceData.workshop2.heatTreatment.coolingRate }}</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 粗车盘工序 -->
+              <el-col :span="24" v-if="traceData.workshop2?.turning">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #67C23A;">③ 粗车盘</div>
+                  <div class="detail-value">
+                    <span>转速：{{ traceData.workshop2.turning.rotationSpeed }} | </span>
+                    <span>进给速度：{{ traceData.workshop2.turning.feedRate }} | </span>
+                    <span>公差：{{ traceData.workshop2.turning.tolerance }} | </span>
+                    <span>刀具型号：{{ traceData.workshop2.turning.toolType }}</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 加工齿工序 -->
+              <el-col :span="24" v-if="traceData.workshop2?.gear">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #67C23A;">④ 加工齿</div>
+                  <div class="detail-value">
+                    <span>齿轮精度：{{ traceData.workshop2.gear.gearAccuracy }} | </span>
+                    <span>表面硬度：{{ traceData.workshop2.gear.surfaceHardness }} | </span>
+                    <span>设备编号：{{ traceData.workshop2.gear.equipmentNo }}</span>
                   </div>
                 </div>
               </el-col>
@@ -414,6 +504,50 @@
                   </div>
                 </div>
               </el-col>
+              <!-- 淬火工序 -->
+              <el-col :span="24" v-if="traceData.workshop3?.quenching">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #E6A23C;">① 淬火</div>
+                  <div class="detail-value">
+                    <span>淬火温度：{{ traceData.workshop3.quenching.quenchingTemp }} | </span>
+                    <span>冷却介质：{{ traceData.workshop3.quenching.coolingMedium }} | </span>
+                    <span>硬度：{{ traceData.workshop3.quenching.hardness }}</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 校直工序 -->
+              <el-col :span="24" v-if="traceData.workshop3?.straightening">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #E6A23C;">② 校直</div>
+                  <div class="detail-value">
+                    <span>校直力：{{ traceData.workshop3.straightening.straighteningForce }} | </span>
+                    <span>回火温度：{{ traceData.workshop3.straightening.temperingTemp }} | </span>
+                    <span>保温时间：{{ traceData.workshop3.straightening.holdTime }}</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 检验工序 -->
+              <el-col :span="24" v-if="traceData.workshop3?.inspection">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #E6A23C;">③ 检验</div>
+                  <div class="detail-value">
+                    <span>缺陷等级：<el-tag :type="traceData.workshop3.inspection.defectLevel === '无' ? 'success' : 'danger'" size="mini">{{ traceData.workshop3.inspection.defectLevel }}</el-tag> | </span>
+                    <span>缺陷位置：{{ traceData.workshop3.inspection.defectPosition }} | </span>
+                    <span>检验员：{{ traceData.workshop3.inspection.inspector }}</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 精车孔工序 -->
+              <el-col :span="24" v-if="traceData.workshop3?.fineTurning">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #E6A23C;">④ 精车孔</div>
+                  <div class="detail-value">
+                    <span>公差：{{ traceData.workshop3.fineTurning.tolerance }} | </span>
+                    <span>孔精度：{{ traceData.workshop3.fineTurning.holeAccuracy }} | </span>
+                    <span>设备编号：{{ traceData.workshop3.fineTurning.equipmentNo }}</span>
+                  </div>
+                </div>
+              </el-col>
             </el-row>
           </div>
 
@@ -472,6 +606,27 @@
                       {{ traceData.workshop4.assemblyCheck.result || '--' }}
                     </el-tag>
                     <span v-else>--</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 喷漆工序 -->
+              <el-col :span="24" v-if="traceData.workshop4?.painting">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #F56C6C;">① 喷漆</div>
+                  <div class="detail-value">
+                    <span>漆面厚度：{{ traceData.workshop4.painting.paintThickness }} | </span>
+                    <span>喷涂压力：{{ traceData.workshop4.painting.sprayPressure }} | </span>
+                    <span>油漆批次：{{ traceData.workshop4.painting.paintBatch }}</span>
+                  </div>
+                </div>
+              </el-col>
+              <!-- 包装工序 -->
+              <el-col :span="24" v-if="traceData.workshop4?.packing">
+                <div class="detail-item full-width">
+                  <div class="detail-label" style="font-weight: bold; color: #F56C6C;">② 包装</div>
+                  <div class="detail-value">
+                    <span>包装时间：{{ traceData.workshop4.packing.packTime }} | </span>
+                    <span>包装员：{{ traceData.workshop4.packing.packOperator }}</span>
                   </div>
                 </div>
               </el-col>
@@ -594,6 +749,12 @@
           </div>
         </div>
       </div>
+      
+      <!-- AI分析结果 -->
+      <AIAnalysisSection 
+        v-if="showAIAnalysis" 
+        :analysisResult="aiAnalysisResult"
+      />
     </div>
 
     <!-- 空状态 -->
@@ -631,8 +792,14 @@
 </template>
 
 <script>
+import axios from 'axios'
+import AIAnalysisSection from './AIAnalysisSection.vue'
+
 export default {
   name: 'TraceQuery',
+  components: {
+    AIAnalysisSection
+  },
   data() {
     return {
       // 查询表单
@@ -642,14 +809,14 @@ export default {
       // 查询规则
       queryRules: {
         shaftCode: [
-          { required: true, message: '请输入半轴编码', trigger: 'blur' },
-          { min: 10, max: 20, message: '编码长度10-20位', trigger: 'blur' }
+          { required: true, message: '请输入半轴编码', trigger: 'blur' }
         ]
       },
       // 查询状态
       queryLoading: false,
       loading: false,
       exportLoading: false,
+      aiAnalysisLoading: false,
       // 查询时间
       queryTime: '',
       // 溯源数据
@@ -682,7 +849,10 @@ export default {
       ],
       // 显示控制
       showResult: false,
-      showEmpty: true
+      showEmpty: true,
+      showAIAnalysis: false,
+      // AI分析结果
+      aiAnalysisResult: null
     }
   },
   computed: {
@@ -735,123 +905,244 @@ export default {
       })
     },
 
-    // 模拟API查询函数（实际使用时替换为真实API调用）
+    // 调用后端API查询溯源信息
     async queryTraceData(shaftCode) {
-      // 这里模拟API调用，实际使用时替换为：
-      // return await this.$axios.get('/api/trace/query', { params: { shaftCode } })
-      
-      // 模拟延迟
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // 模拟返回数据（根据实际后端数据结构调整）
-      return {
-        success: true,
-        message: '查询成功',
-        data: {
-          shaftCode,
-          productModel: 'XZ-500-2023',
-          batchNumber: 'BATCH-202312-001',
-          productionDate: '2023-12-15',
-          factoryDate: '2023-12-20',
-          qualityStatus: '合格',
-          isOnChain: true,
-          
-          // 原料产地数据
-          rawMaterial: {
-            supplier: '宝钢集团',
-            materialType: '40Cr合金钢',
-            origin: '上海宝山',
-            purchaseDate: '2023-12-10',
-            batchNo: 'RAW-202312001',
-            status: '合格',
-            reportUrl: '/reports/material-001.pdf'
-          },
-          
-          // 一车间（锻造）
-          workshop1: {
-            processDate: '2023-12-16',
-            operator: '张三',
-            equipmentNo: 'FORGE-001',
-            parameters: {
-              temperature: '1150',
-              pressure: '850'
-            },
-            qualityCheck: {
-              result: '合格',
-              inspector: '李四'
-            },
-            status: '已完成'
-          },
-          
-          // 二车间（热处理）
-          workshop2: {
-            processDate: '2023-12-17',
-            operator: '王五',
-            processType: '淬火+回火',
-            temperatureCurve: {
-              heating: '850',
-              holding: '400'
-            },
-            hardnessTest: {
-              value: '48',
-              standard: '45-50 HRC'
-            },
-            status: '已完成'
-          },
-          
-          // 三车间（机加工）
-          workshop3: {
-            processDate: '2023-12-18',
-            operator: '赵六',
-            machineNo: 'CNC-003',
-            dimensions: {
-              length: '850',
-              diameter: '45'
-            },
-            precisionCheck: {
-              result: '合格',
-              tolerance: '±0.02mm'
-            },
-            status: '已完成'
-          },
-          
-          // 四车间（装配）
-          workshop4: {
-            assemblyDate: '2023-12-19',
-            assembler: '钱七',
-            workstationNo: 'ASSEM-001',
-            partsList: ['轴承', '油封', '螺母'],
-            assemblyCheck: {
-              result: '合格',
-              inspector: '孙八'
-            },
-            status: '已完成'
-          },
-          
-          // AI认证
-          aiCertification: {
-            certificationTime: '2023-12-20 10:30:00',
-            aiModelVersion: 'V2.1.0',
-            certificationScore: 95,
-            certificationStatus: '认证通过',
-            reportSummary: '该半轴通过AI智能检测，各生产环节参数符合标准，质量可靠。',
-            certificationDetails: [
-              { item: '外观检测', result: '通过' },
-              { item: '尺寸精度', result: '通过' },
-              { item: '硬度检测', result: '通过' },
-              { item: '表面质量', result: '通过' },
-              { item: '装配质量', result: '通过' }
-            ]
-          },
-          
-          // 区块链信息
-          blockchainInfo: {
-            blockHash: '0x7d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f',
-            transactionId: 'TX20231220001',
-            onChainTime: '2023-12-20 11:00:00'
+      try {
+        const response = await axios.get(`/api/trace/query/${shaftCode}`)
+            
+        if (response.data.code === 200 && response.data.data) {
+          // 转换后端数据为前端展示格式
+          return {
+            success: true,
+            message: '查询成功',
+            data: this.transformTraceData(shaftCode, response.data.data)
+          }
+        } else {
+          return {
+            success: false,
+            message: response.data.message || '查询失败'
           }
         }
+      } catch (error) {
+        console.error('查询溯源信息失败:', error)
+        return {
+          success: false,
+          message: error.response?.data?.message || '查询请求失败，请稍后重试'
+        }
       }
+    },
+        
+    // 转换后端数据为前端展示格式
+    transformTraceData(shaftCode, backendData) {
+      return {
+        shaftCode,
+        productModel: backendData.productModel || shaftCode.substring(0, 2) + '-' + shaftCode.substring(2, 6),
+        batchNumber: backendData.materialBatch || '未知',
+        productionDate: backendData.productionDate || '未知',
+        factoryDate: backendData.updateTime || '未知',
+        qualityStatus: this.getQualityStatus(backendData.defectLevel, backendData.status),
+        isOnChain: true,
+            
+        // 原料产地数据
+        rawMaterial: backendData.materialBatch ? {
+          supplier: '原材料供应商',
+          materialType: '40Cr合金钢',
+          origin: '中国',
+          purchaseDate: backendData.productionDate || '未知',
+          batchNo: backendData.materialBatch,
+          status: '合格',
+          reportUrl: null
+        } : null,
+            
+        // 一车间（锻造）
+        workshop1: backendData.workshop1 ? {
+          processDate: backendData.productionDate || '未知',
+          // 切割下料数据
+          cutting: backendData.workshop1.cutting ? {
+            materialBatch: backendData.workshop1.cutting.materialBatch || '--',
+            cutSize: backendData.workshop1.cutting.cutSize || '--',
+            cutSpeed: backendData.workshop1.cutting.cutSpeed || '--',
+            operator: backendData.workshop1.cutting.operator || '--'
+          } : null,
+          // 压花键数据
+          pressing: backendData.workshop1.pressing ? {
+            pressure: backendData.workshop1.pressing.pressure || '--',
+            splineSize: backendData.workshop1.pressing.splineSize || '--',
+            equipmentNo: backendData.workshop1.pressing.equipmentNo || '--'
+          } : null,
+          // 锻造数据
+          forging: backendData.workshop1.forging ? {
+            forgingTemp: backendData.workshop1.forging.forgingTemp || '--',
+            pressure: backendData.workshop1.forging.pressure || '--',
+            holdTime: backendData.workshop1.forging.holdTime || '--',
+            defect: backendData.workshop1.forging.defect || '--'
+          } : null,
+          operator: backendData.workshop1.cutting?.operator || backendData.workshop1.forging?.operator || '系统',
+          equipmentNo: backendData.workshop1.pressing?.equipmentNo || 'AUTO-001',
+          parameters: {
+            temperature: backendData.workshop1.forging?.forgingTemp || '1150',
+            pressure: backendData.workshop1.forging?.pressure || '850'
+          },
+          qualityCheck: {
+            result: backendData.workshop1.forging?.defect === '无' ? '合格' : (backendData.status || '未知'),
+            inspector: '系统'
+          },
+          status: '已完成'
+        } : null,
+            
+        // 二车间（热处理）
+        workshop2: backendData.workshop2 ? {
+          processDate: backendData.productionDate || '未知',
+          // 钻中心孔数据
+          drilling: backendData.workshop2.drilling ? {
+            holeSize: backendData.workshop2.drilling.holeSize || '--',
+            holeDepth: backendData.workshop2.drilling.holeDepth || '--',
+            equipmentSpeed: backendData.workshop2.drilling.equipmentSpeed || '--'
+          } : null,
+          // 调质热处理数据
+          heatTreatment: backendData.workshop2.heatTreatment ? {
+            heatingTemp: backendData.workshop2.heatTreatment.heatingTemp || '--',
+            holdTime: backendData.workshop2.heatTreatment.holdTime || '--',
+            coolingRate: backendData.workshop2.heatTreatment.coolingRate || '--'
+          } : null,
+          // 粗车盘数据
+          turning: backendData.workshop2.turning ? {
+            rotationSpeed: backendData.workshop2.turning.rotationSpeed || '--',
+            feedRate: backendData.workshop2.turning.feedRate || '--',
+            tolerance: backendData.workshop2.turning.tolerance || '--',
+            toolType: backendData.workshop2.turning.toolType || '--'
+          } : null,
+          // 加工齿数据
+          gear: backendData.workshop2.gear ? {
+            gearAccuracy: backendData.workshop2.gear.gearAccuracy || '--',
+            surfaceHardness: backendData.workshop2.gear.surfaceHardness || '--',
+            equipmentNo: backendData.workshop2.gear.equipmentNo || '--'
+          } : null,
+          operator: '系统',
+          processType: '淆火+回火',
+          temperatureCurve: {
+            heating: backendData.workshop2.heatTreatment?.heatingTemp || '850',
+            holding: '400'
+          },
+          hardnessTest: {
+            value: backendData.workshop2.gear?.surfaceHardness || '48',
+            standard: '45-50 HRC'
+          },
+          status: '已完成'
+        } : null,
+            
+        // 三车间（机加工）
+        workshop3: backendData.workshop3 ? {
+          processDate: backendData.productionDate || '未知',
+          // 淬火数据
+          quenching: backendData.workshop3.quenching ? {
+            quenchingTemp: backendData.workshop3.quenching.quenchingTemp || '--',
+            coolingMedium: backendData.workshop3.quenching.coolingMedium || '--',
+            hardness: backendData.workshop3.quenching.hardness || '--'
+          } : null,
+          // 校直数据
+          straightening: backendData.workshop3.straightening ? {
+            straighteningForce: backendData.workshop3.straightening.straighteningForce || '--',
+            temperingTemp: backendData.workshop3.straightening.temperingTemp || '--',
+            holdTime: backendData.workshop3.straightening.holdTime || '--'
+          } : null,
+          // 检验数据
+          inspection: backendData.workshop3.inspection ? {
+            defectLevel: backendData.workshop3.inspection.defectLevel || '--',
+            defectPosition: backendData.workshop3.inspection.defectPosition || '--',
+            inspector: backendData.workshop3.inspection.inspector || '--'
+          } : null,
+          // 精车孔数据
+          fineTurning: backendData.workshop3.fineTurning ? {
+            tolerance: backendData.workshop3.fineTurning.tolerance || '--',
+            holeAccuracy: backendData.workshop3.fineTurning.holeAccuracy || '--',
+            equipmentNo: backendData.workshop3.fineTurning.equipmentNo || '--'
+          } : null,
+          operator: '系统',
+          machineNo: backendData.workshop3.fineTurning?.equipmentNo || 'CNC-003',
+          dimensions: {
+            length: '850',
+            diameter: '45'
+          },
+          precisionCheck: {
+            result: backendData.workshop3.inspection?.defectLevel === '无' ? '合格' : '未知',
+            tolerance: '齿轮精度: ' + (backendData.gearAccuracy || '--')
+          },
+          status: '已完成'
+        } : null,
+            
+        // 四车间（装配）
+        workshop4: backendData.workshop4 ? {
+          assemblyDate: backendData.productionDate || '未知',
+          // 喷漆数据
+          painting: backendData.workshop4.painting ? {
+            paintThickness: backendData.workshop4.painting.paintThickness || '--',
+            sprayPressure: backendData.workshop4.painting.sprayPressure || '--',
+            paintBatch: backendData.workshop4.painting.paintBatch || '--'
+          } : null,
+          // 包装数据
+          packing: backendData.workshop4.packing ? {
+            packTime: backendData.workshop4.packing.packTime || '--',
+            packOperator: backendData.workshop4.packing.packOperator || '--'
+          } : null,
+          assembler: backendData.workshop4.packing?.packOperator || '系统',
+          workstationNo: 'ASSEM-001',
+          partsList: ['油漆处理'],
+          assemblyCheck: {
+            result: backendData.status || '未知',
+            inspector: '油漆厚度: ' + (backendData.workshop4.painting?.paintThickness || backendData.paintThickness || '--')
+          },
+          status: '已完成'
+        } : null,
+            
+        // AI认证
+        aiCertification: {
+          certificationTime: backendData.updateTime || '未知',
+          aiModelVersion: 'V2.1.0',
+          certificationScore: this.calculateScore(backendData.defectLevel),
+          certificationStatus: backendData.defectLevel === 0 ? '认证通过' : '存在缺陷',
+          reportSummary: `该半轴缺陷等级为${backendData.defectLevel}，状态为${backendData.status || '未知'}。`,
+          certificationDetails: [
+            { item: '缺陷检测', result: backendData.defectLevel === 0 ? '通过' : '不通过' },
+            { item: '材料检验', result: backendData.materialBatch ? '通过' : '未检测' },
+            { item: '齿轮精度', result: backendData.gearAccuracy ? '通过' : '未检测' },
+            { item: '油漆质量', result: backendData.paintThickness ? '通过' : '未检测' }
+          ]
+        },
+            
+        // 区块链信息
+        blockchainInfo: {
+          blockHash: this.generateBlockHash(shaftCode),
+          transactionId: 'TX' + new Date().getTime(),
+          onChainTime: backendData.updateTime || new Date().toLocaleString('zh-CN')
+        }
+      }
+    },
+        
+    // 获取质量状态
+    getQualityStatus(defectLevel, status) {
+      if (status === '合格') return '合格'
+      if (status === '不合格') return '不合格'
+      if (defectLevel === 0) return '合格'
+      if (defectLevel >= 3) return '不合格'
+      return status || '待检测'
+    },
+        
+    // 计算评分
+    calculateScore(defectLevel) {
+      if (defectLevel === 0) return 100
+      if (defectLevel === 1) return 90
+      if (defectLevel === 2) return 75
+      if (defectLevel === 3) return 60
+      return 50
+    },
+        
+    // 生成区块哈希（模拟）
+    generateBlockHash(shaftCode) {
+      const hash = shaftCode.split('').reduce((acc, char) => {
+        return acc + char.charCodeAt(0).toString(16)
+      }, '0x')
+      return hash + '0'.repeat(Math.max(0, 66 - hash.length))
     },
 
     // 获取车间状态标签类型
@@ -915,6 +1206,41 @@ export default {
     viewReport(url) {
       this.$message.info(`打开报告：${url}`)
       // window.open(url, '_blank')
+    },
+    
+    // AI分析处理
+    async handleAIAnalysis() {
+      if (!this.traceData || !this.traceData.shaftCode) {
+        return this.$message.warning('请先查询产品溯源信息')
+      }
+      
+      try {
+        this.aiAnalysisLoading = true
+        
+        const response = await axios.get(`/api/trace/analyze/${this.traceData.shaftCode}`)
+        
+        if (response.data.code === 200 && response.data.data) {
+          this.aiAnalysisResult = response.data.data
+          this.showAIAnalysis = true
+          
+          this.$message.success('AI分析完成！')
+          
+          // 滚动到AI分析区域
+          this.$nextTick(() => {
+            const el = document.querySelector('.ai-analysis-section')
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          })
+        } else {
+          this.$message.error(response.data.message || 'AI分析失败')
+        }
+      } catch (error) {
+        console.error('AI分析失败:', error)
+        this.$message.error('AI分析请求失败，请稍后重试')
+      } finally {
+        this.aiAnalysisLoading = false
+      }
     }
   }
 }

@@ -237,4 +237,19 @@ public class AIAnalysisService {
         
         return result;
     }
+    
+    /**
+     * 通用AI分析方法，可用于其他服务调用
+     * 
+     * @param prompt 提示词
+     * @return AI响应文本
+     */
+    public String analyzeWithPrompt(String prompt) {
+        try {
+            return callAIAPI(prompt);
+        } catch (Exception e) {
+            log.error("AI分析失败: {}", e.getMessage());
+            throw new RuntimeException("AI分析失败: " + e.getMessage());
+        }
+    }
 }

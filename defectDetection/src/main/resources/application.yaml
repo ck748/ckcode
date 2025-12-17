@@ -1,7 +1,7 @@
 spring:
   datasource:
     username: root
-    password: password
+    password: "123456"
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/defect_detection?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
   servlet:
@@ -55,20 +55,20 @@ ai:
 # 区块链配置
 blockchain:
   # 是否启用区块链功能
-  enabled: false
+  enabled: true
   # FISCO BCOS节点配置(使用channel端口)
-  peers: 192.168.1.106:20200  # channel_listen_port
+  peers: 192.168.1.105:20200  # channel_listen_port
   # 群组ID
   group-id: 1
   # 证书路径
   cert-path: blockchain/conf
   # 私钥(Demo8的私钥)
-  hex-private-key: 133c66ebc2e128e76a57f18da71e26688553e5f5a9a33ec452dd812570dac87f
+  hex-private-key: abce280926debccedf8d7b6555b26353573e4cbfa11b4b23fc2cdca9559ddd49
   # 智能合约地址配置(Demo8的合约地址)
   contracts:
     defect-trace: ""  # 
-    data-center: "0x9fc37936eafb1e0b9ad3fc968092e2c65ead5744"   # 数据中心合约地址
-    workshop1: "0x058247030a450a840bd7ab3dd9246339ba3d1cf4"  # 车间1合约地址
-    workshop2: "0x7990bb255f2ad841c598f374099462fa2e261097"  # 车间2合约地址
-    workshop3: "0xf10d1940217f7d9d257485fc820fb924bd0bae8b"  # 车间3合约地址
-    workshop4: "0x18b89320377ca3dfc11519581ab1be3f3c2bff81"  # 车间4合约地址
+    data-center: "0xace4077dca0f685be6c7acdf53e689a9cdd3ede4"   # 数据中心合约地址（来自 hhhhh）
+    workshop1: "0x2964c51e0d3f6da489e7f4e662d2b1cbb9575daf"  # 车间1合约地址（来自 hhhhh）
+    workshop2: "0xdab5e0223759e0042479ebae69d79f21d4c07ecc"  # 车间2合约地址（来自 hhhhh）
+    workshop3: "0x5e84018cafaf55b33e5456ec93faf629e09678c1"  # 车间3合约地址（来自 hhhhh）
+    workshop4: "0xb02523d218c52925039388545f5ecee406eaff20"  # 车间4合约地址（来自 hhhhh）
