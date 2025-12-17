@@ -595,11 +595,6 @@ export default {
   name: 'SmartWorkshopMonitor',
   data() {
     return {
-      // SSE连接
-      eventSource: null,
-      reconnectTimer: null,
-      reconnectAttempts: 0,
-      maxReconnectAttempts: 5,
       // 基础状态
       timeRange: 'realtime',
       activeWorkshop: 1,
@@ -707,13 +702,10 @@ export default {
     // 初始化默认溯源数据
     this.currentTraceData = this.generateTraceData(1);
     
-    // 启用SSE连接替代轮询
-    this.connectSSE();
+    // 开始定时更新数据
+    this.startDataUpdate();
   },
   beforeDestroy() {
-    // 清理SSE连接
-    this.disconnectSSE();
-    
     // 清理图表
     Object.values(this.charts).forEach(chart => chart.dispose());
     if (this.realtimeChart) {
@@ -721,7 +713,7 @@ export default {
     }
     window.removeEventListener('resize', this.handleResize);
     
-    // 清理轮询定时器(降级方案)
+    // 清理定时器
     if (this.dataUpdateTimer) {
       clearInterval(this.dataUpdateTimer);
     }
@@ -996,113 +988,12 @@ export default {
       this.$message.success('数据已刷新');
     },
     
-    // SSE连接管理
-    connectSSE() {
-      if (this.eventSource) {
-        this.eventSource.close();
-      }
-      
-      console.log('🔗 正在建立SSE连接...');
-      this.eventSource = new EventSource('/api/dashboard/stream');
-      
-      this.eventSource.onopen = () => {
-        console.log('✅ SSE连接成功');
-        this.reconnectAttempts = 0;
-      };
-      
-      this.eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          this.handleSSEData(data);
-        } catch (e) {
-          console.error('SSE数据解析失败:', e);
-        }
-      };
-      
-      this.eventSource.onerror = (error) => {
-        console.error('❌ SSE连接错误:', error);
-        this.eventSource.close();
-        this.reconnectSSE();
-      };
-    },
-    
-    disconnectSSE() {
-      if (this.reconnectTimer) {
-        clearTimeout(this.reconnectTimer);
-      }
-      if (this.eventSource) {
-        this.eventSource.close();
-        this.eventSource = null;
-      }
-    },
-    
-    reconnectSSE() {
-      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('🚫 SSE重连次数已达上限');
-        return;
-      }
-      
-      this.reconnectAttempts++;
-      const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
-      console.log(`🔄 ${delay}ms后尝试SSE重连(第${this.reconnectAttempts}次)...`);
-      
-      this.reconnectTimer = setTimeout(() => {
-        this.connectSSE();
-      }, delay);
-    },
-    
-    handleSSEData(data) {
-      // 更新时间
-      this.updateTime = new Date().toLocaleTimeString();
-      
-      // 处理后端推送的数据
-      if (data.dynamicData) {
-        this.dynamicData = data.dynamicData;
-      }
-      
-      if (data.workshopData) {
-        this.updateWorkshopChartsFromSSE(data.workshopData);
-      }
-      
-      if (data.realtimeChart) {
-        this.updateRealtimeChartFromSSE(data.realtimeChart);
-      }
-    },
-    
-    updateWorkshopChartsFromSSE(workshopData) {
-      workshopData.forEach((workshop, index) => {
-        const chartKey = `workshop${index + 1}`;
-        const chart = this.charts[chartKey];
-        
-        if (chart && !chart.isDisposed() && this.workshopData[index]) {
-          this.workshopData[index].efficiency = workshop.efficiency;
-          this.workshopData[index].chartData = workshop.chartData;
-          this.workshopData[index].timeLabels = workshop.timeLabels;
-          
-          chart.setOption({
-            xAxis: { data: workshop.timeLabels },
-            series: [{ data: workshop.chartData }]
-          });
-        }
-      });
-    },
-    
-    updateRealtimeChartFromSSE(chartData) {
-      if (this.realtimeChart && !this.realtimeChart.isDisposed()) {
-        this.realtimeChart.setOption({
-          xAxis: { data: chartData.timeLabels },
-          series: [
-            { data: chartData.efficiencyData },
-            { data: chartData.qualityData }
-          ]
-        });
-      }
-    },
-    
-    // 开始数据更新 - 保留作为降级方案
+    // 开始数据更新
     startDataUpdate() {
-      console.warn('⚠️ 使用轮询降级方案');
+      // 立即执行一次更新
       this.updateData();
+      
+      // 设置定时器，每3秒更新一次
       this.dataUpdateTimer = setInterval(() => {
         this.updateData();
       }, 1500);

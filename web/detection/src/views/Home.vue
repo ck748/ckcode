@@ -46,13 +46,17 @@
               <i class="el-icon-document menu-icon"></i>
               <span class="menu-text">溯源管理</span>
             </template>
+            <el-menu-item index="/query" class="submenu-item">
+              <i class="el-icon-search submenu-icon"></i>
+              <span>溯源查询</span>
+            </el-menu-item>
             <el-menu-item index="/info" class="submenu-item">
               <i class="el-icon-tickets submenu-icon"></i>
               <span>整体检测</span>
             </el-menu-item>
             <el-menu-item index="/annotation" class="submenu-item">
               <i class="el-icon-edit-outline submenu-icon"></i>
-              <span>车间检测</span>
+              <span>车间标注</span>
             </el-menu-item>
             <el-menu-item index="/charts" class="submenu-item">
               <i class="el-icon-data-analysis submenu-icon"></i>
@@ -68,15 +72,19 @@
           <el-submenu index="chain">
             <template slot="title">
               <i class="el-icon-connection menu-icon"></i>
-              <span class="menu-text">双链管理</span>
+              <span class="menu-text">链上管理</span>
             </template>
+              <el-menu-item index="/Double-stranded" class="submenu-item">
+              <i class="el-icon-set-up submenu-icon"></i>
+              <span>双链管理</span>
+            </el-menu-item>
             <el-menu-item index="/production" class="submenu-item">
               <i class="el-icon-cpu submenu-icon"></i>
-              <span>私有链管理</span>
+              <span>私有链</span>
             </el-menu-item>
             <el-menu-item index="/assembly" class="submenu-item">
               <i class="el-icon-set-up submenu-icon"></i>
-              <span>联盟链管理</span>
+              <span>联盟链</span>
             </el-menu-item>
           </el-submenu>
 
@@ -195,7 +203,7 @@
           </span>
         </div>
         <div class="footer-right">
-          <span class="copyright">© 2024 智轴链鉴系统 - 区块链半轴溯源平台</span>
+          <span class="copyright">© 2026 智轴链鉴系统 - 区块链半轴溯源平台</span>
         </div>
       </div>
     </div>
@@ -762,5 +770,30 @@ export default {
     height: auto;
     padding: 12px 16px;
   }
+}
+</style>
+
+<style>
+/* 全局样式 - 修复页面顶部空白问题 */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #0a1028;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+#app {
+  height: 100%;
+  background-color: #0a1028;
+}
+
+/* 确保侧边栏的顶部对齐 */
+.blockchain-layout {
+  position: relative;
 }
 </style>
