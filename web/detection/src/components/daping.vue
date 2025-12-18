@@ -13,7 +13,7 @@
       <div class="header-content">
         <div class="title-section">
           <h1 class="main-title">
-            <span class="title-glow">工业半轴</span>
+            <span class="title-glow">汽车半轴</span>
             <span class="title-sub">区块链溯源监控中心</span>
           </h1>
           <div class="title-tag">
@@ -115,7 +115,15 @@
             <div class="chain-line main-chain-line"></div>
             <div class="chain-line secondary-chain-line"></div>
             
-            <!-- 第一条链区块节点 -->
+            <!-- 链标签 - 只调整私有链位置 -->
+            <div class="chain-label private-chain">
+              <div class="chain-tag">私有链</div>
+            </div>
+            <div class="chain-label alliance-chain">
+              <div class="chain-tag">联盟链</div>
+            </div>
+            
+            <!-- 第一条链：私有链区块节点 - 显示5个 -->
             <div class="chain-nodes chain-1">
               <div 
                 class="block-node" 
@@ -135,7 +143,7 @@
               </div>
             </div>
             
-            <!-- 第二条链区块节点 -->
+            <!-- 第二条链：联盟链区块节点 - 显示5个 -->
             <div class="chain-nodes chain-2">
               <div 
                 class="block-node" 
@@ -454,7 +462,7 @@ export default {
       // 区块链统计数据
       blockchainStats: {
         totalBlocks: 18472,
-        todayTransactions: 5234,
+        todayTransactions: 1228,
         activeNodes: 12,
         blockTime: '3.2s',
         dataIntegrity: '99.98%'
@@ -475,8 +483,8 @@ export default {
         { label: '30天', value: '30d' }
       ],
       
-      // 示例产品ID
-      examples: ['AX20231215001', 'AX20231214012', 'AX20231213045', 'AX20231212034'],
+      // 示例产品ID - 改为SN-数字数字-数字数字格式
+      examples: ['SN-45-23', 'SN-92-72', 'SN-67-34', 'SN-81-56'],
       
       // 数据标签映射
       dataLabels: {
@@ -509,12 +517,29 @@ export default {
       
       // 当前区块高度
       currentBlockHeight: 18472,
+      allianceChainHeight: 8500, // 联盟链区块高度
+      
+      // 产品型号选项
+      productTypes: [
+        '全浮式半轴130系列',
+        '轮减式半轴153系列',
+        '商用车全浮457系列',
+        '乘用车半轴485/440系列',
+        '乘用车半轴140/145系列'
+      ],
+      
+      // 产品ID生成函数
+      generateProductId: function() {
+        const num1 = Math.floor(Math.random() * 90) + 10; // 10-99
+        const num2 = Math.floor(Math.random() * 90) + 10; // 10-99
+        return `SN-${num1}-${num2}`;
+      },
       
       // 溯源结果模板
       traceTemplates: [
         {
           id: 'template-1',
-          productId: 'AX20231215001',
+          productId: 'SN-45-23',
           batch: 'BATCH-1220',
           productionStatus: '已完成',
           productionStatusClass: 'success',
@@ -584,7 +609,7 @@ export default {
         },
         {
           id: 'template-2',
-          productId: 'AX20231214988',
+          productId: 'SN-92-72',
           batch: 'BATCH-1219',
           productionStatus: '有缺陷',
           productionStatusClass: 'warning',
@@ -654,7 +679,7 @@ export default {
         },
         {
           id: 'template-3',
-          productId: 'AX20231214990',
+          productId: 'SN-67-34',
           batch: 'BATCH-1221',
           productionStatus: '返工中',
           productionStatusClass: 'processing',
@@ -716,7 +741,7 @@ export default {
         },
         {
           id: 'template-4',
-          productId: 'AX20231214992',
+          productId: 'SN-81-56',
           batch: 'BATCH-1222',
           productionStatus: '待检验',
           productionStatusClass: 'pending',
@@ -778,7 +803,7 @@ export default {
         },
         {
           id: 'template-5',
-          productId: 'AX20231214995',
+          productId: 'SN-38-91',
           batch: 'BATCH-1223',
           productionStatus: '已发货',
           productionStatusClass: 'shipped',
@@ -883,20 +908,20 @@ export default {
     window.removeEventListener('resize', this.handleResize);
   },
   methods: {
-    // 初始化双链
+    // 初始化双链 - 改为5个区块
     initializeChains() {
       const now = Date.now();
       
-      // 第一条链
+      // 第一条链：私有链 - 改为5个区块
       this.chain1Blocks = [
         {
           number: this.currentBlockHeight,
           hash: '0x7d3f8a1b4c9e2f6a5d8b0e7c3f9a1b4c8e2d6f5a',
-          productId: 'AX20231215001',
+          productId: this.generateProductId(),
           timestamp: now - 180000,
           data: {
-            product: '工业半轴',
-            type: 'A型',
+            product: this.generateProductId(),
+            type: this.productTypes[0],
             specification: 'Φ45×1200mm',
             material: '40Cr',
             process: '精车杆',
@@ -909,11 +934,11 @@ export default {
         {
           number: this.currentBlockHeight - 1,
           hash: '0x6c2e7b0a3d8f1e5c4b9a0f2e3c4d5b6a7f8e9d0c',
-          productId: 'AX20231214999',
+          productId: this.generateProductId(),
           timestamp: now - 360000,
           data: {
-            product: '工业半轴',
-            type: 'A型',
+            product: this.generateProductId(),
+            type: this.productTypes[1],
             specification: 'Φ45×1200mm',
             material: '40Cr',
             process: '粗抛丸',
@@ -926,11 +951,11 @@ export default {
         {
           number: this.currentBlockHeight - 2,
           hash: '0x5b1d6a2e7c3f8b4a9d5e0c6f1b7a2d8c3e9f4b5a',
-          productId: 'AX20231214998',
+          productId: this.generateProductId(),
           timestamp: now - 540000,
           data: {
-            product: '工业半轴',
-            type: 'A型',
+            product: this.generateProductId(),
+            type: this.productTypes[2],
             specification: 'Φ45×1200mm',
             material: '40Cr',
             process: '探伤',
@@ -943,11 +968,11 @@ export default {
         {
           number: this.currentBlockHeight - 3,
           hash: '0x4a0c592d7b2e6a4f8c3d1a5e0b6a1c7d2e8f3b4a',
-          productId: 'AX20231214997',
+          productId: this.generateProductId(),
           timestamp: now - 720000,
           data: {
-            product: '工业半轴',
-            type: 'B型',
+            product: this.generateProductId(),
+            type: this.productTypes[3],
             specification: 'Φ50×1500mm',
             material: '45#钢',
             process: '热处理',
@@ -959,12 +984,12 @@ export default {
         },
         {
           number: this.currentBlockHeight - 4,
-          hash: '0x3f0b4a1c6d2e5a3f7b2c0d9e8a1b5c4d7e3f2a1b',
-          productId: 'AX20231214996',
+          hash: '0x3a9b481c6a1d5e7f9b2c4d3e0f5a6b7c8d9e1a2b',
+          productId: this.generateProductId(),
           timestamp: now - 900000,
           data: {
-            product: '工业半轴',
-            type: 'C型',
+            product: this.generateProductId(),
+            type: this.productTypes[4],
             specification: 'Φ40×1000mm',
             material: '42CrMo',
             process: '切割',
@@ -976,16 +1001,16 @@ export default {
         }
       ];
       
-      // 第二条链
+      // 第二条链：联盟链 - 改为5个区块
       this.chain2Blocks = [
         {
-          number: this.currentBlockHeight - 10,
+          number: this.allianceChainHeight,
           hash: '0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b',
-          productId: 'AX20231214990',
+          productId: this.generateProductId(),
           timestamp: now - 720000,
           data: {
-            product: '工业半轴',
-            type: 'B型',
+            product: this.generateProductId(),
+            type: this.productTypes[2],
             specification: 'Φ50×1500mm',
             material: '45#钢',
             process: '热处理',
@@ -996,13 +1021,13 @@ export default {
           }
         },
         {
-          number: this.currentBlockHeight - 11,
+          number: this.allianceChainHeight - 1,
           hash: '0x8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d',
-          productId: 'AX20231214989',
+          productId: this.generateProductId(),
           timestamp: now - 900000,
           data: {
-            product: '工业半轴',
-            type: 'C型',
+            product: this.generateProductId(),
+            type: this.productTypes[3],
             specification: 'Φ40×1000mm',
             material: '42CrMo',
             process: '切割',
@@ -1013,13 +1038,13 @@ export default {
           }
         },
         {
-          number: this.currentBlockHeight - 12,
+          number: this.allianceChainHeight - 2,
           hash: '0x7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f',
-          productId: 'AX20231214988',
+          productId: this.generateProductId(),
           timestamp: now - 1080000,
           data: {
-            product: '工业半轴',
-            type: 'A型',
+            product: this.generateProductId(),
+            type: this.productTypes[4],
             specification: 'Φ45×1200mm',
             material: '40Cr',
             process: '压花键',
@@ -1030,13 +1055,13 @@ export default {
           }
         },
         {
-          number: this.currentBlockHeight - 13,
+          number: this.allianceChainHeight - 3,
           hash: '0x6d7c8b9a0f1e2d3c4b5a6f7e8d9c0b1a2f3e4d5c',
-          productId: 'AX20231214987',
+          productId: this.generateProductId(),
           timestamp: now - 1260000,
           data: {
-            product: '工业半轴',
-            type: 'A型',
+            product: this.generateProductId(),
+            type: this.productTypes[0],
             specification: 'Φ45×1200mm',
             material: '40Cr',
             process: '精加工',
@@ -1047,20 +1072,20 @@ export default {
           }
         },
         {
-          number: this.currentBlockHeight - 14,
-          hash: '0x5c6b7a8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b',
-          productId: 'AX20231214986',
+          number: this.allianceChainHeight - 4,
+          hash: '0x5c6b7a9d8e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b',
+          productId: this.generateProductId(),
           timestamp: now - 1440000,
           data: {
-            product: '工业半轴',
-            type: 'B型',
-            specification: 'Φ50×1500mm',
-            material: '45#钢',
+            product: this.generateProductId(),
+            type: this.productTypes[1],
+            specification: 'Φ45×1200mm',
+            material: '40Cr',
             process: '探伤',
-            quality: 'B级',
-            temperature: '850℃',
-            pressure: '118MPa',
-            duration: '52min'
+            quality: 'A级',
+            temperature: '800℃',
+            pressure: '100MPa',
+            duration: '35min'
           }
         }
       ];
@@ -1096,36 +1121,23 @@ export default {
       this.timeInterval = setInterval(updateTime, 1000);
     },
     
-    // 初始化图表 - 正常折线波动
+    // 初始化图表 - 平滑波动
     initCharts() {
       const chartDom = document.getElementById('chainChart');
       if (!chartDom) return;
       
       this.chainChart = echarts.init(chartDom);
       
-      // 初始化图表数据 - 创建正常的折线波动
+      // 初始化图表数据 - 创建平滑的波动
       this.chartData = Array.from({ length: 60 }, (_, i) => {
-        // 正常波动范围：15-25
+        // 基准值：20
         const base = 20;
-        // 创建有规律的波动，每12个点一个周期
-        const cycle = Math.floor(i / 12) % 3;
-        let wave = 0;
+        // 非常小的波动，几乎为直线
+        const wave = Math.sin(i / 20) * 0.5; // 减小波动幅度
+        // 添加极小的随机波动
+        const random = (Math.random() - 0.5) * 0.3; // 减小随机波动
         
-        if (cycle === 0) {
-          // 上升趋势
-          wave = Math.sin(i / 10) * 3;
-        } else if (cycle === 1) {
-          // 平稳趋势
-          wave = Math.sin(i / 15) * 2;
-        } else {
-          // 下降趋势
-          wave = -Math.sin(i / 8) * 3;
-        }
-        
-        // 添加少量随机波动
-        const random = (Math.random() - 0.5) * 1.5;
-        
-        return Math.max(15, Math.min(25, base + wave + random));
+        return Math.max(19.5, Math.min(20.5, base + wave + random));
       });
       
       const option = {
@@ -1164,8 +1176,8 @@ export default {
             color: 'rgba(0, 0, 0, 0.5)',
             fontSize: 12
           },
-          min: 15,
-          max: 25,
+          min: 19,
+          max: 21,
           axisLine: {
             show: false
           },
@@ -1183,9 +1195,9 @@ export default {
         series: [{
           type: 'line',
           data: this.chartData,
-          smooth: false, // 改为折线图
+          smooth: true,
           symbol: 'circle',
-          symbolSize: 4,
+          symbolSize: 3,
           lineStyle: {
             width: 2,
             color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{
@@ -1202,15 +1214,15 @@ export default {
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
               offset: 0,
-              color: 'rgba(10, 102, 204, 0.3)'
+              color: 'rgba(10, 102, 204, 0.2)'
             }, {
               offset: 1,
-              color: 'rgba(10, 102, 204, 0.05)'
+              color: 'rgba(10, 102, 204, 0.02)'
             }])
           },
           markPoint: {
             symbol: 'circle',
-            symbolSize: 6,
+            symbolSize: 5,
             itemStyle: {
               color: '#00a86b'
             },
@@ -1232,7 +1244,7 @@ export default {
           },
           formatter: (params) => {
             const data = params[0];
-            return `时间: ${data.name}<br/>上链数: ${data.value}`;
+            return `时间: ${data.name}<br/>上链数: ${data.value.toFixed(1)}`;
           }
         }
       };
@@ -1240,30 +1252,30 @@ export default {
       this.chainChart.setOption(option);
     },
     
-    // 更新图表数据 - 正常折线波动
+    // 更新图表数据 - 平滑波动
     updateChartData() {
       if (!this.chainChart) return;
       
-      // 移除第一个数据点（5个区块才消失一个的逻辑在区块链数据流中处理）
+      // 移除第一个数据点
       this.chartData.shift();
       
-      // 生成新的数据点，保持正常的折线波动
+      // 生成新的数据点，保持平滑的波动
       const lastValue = this.chartData[this.chartData.length - 1] || 20;
       const base = 20;
       
-      // 基于时间创建有规律的波动
-      const timeFactor = Date.now() / 30000; // 每30秒一个周期
-      let wave = Math.sin(timeFactor) * 2;
+      // 非常小的波动
+      const timeFactor = Date.now() / 60000; // 每60秒一个周期
+      let wave = Math.sin(timeFactor) * 0.1; // 减小波动幅度
       
-      // 添加少量随机波动
-      const random = (Math.random() - 0.5) * 2;
+      // 添加极小的随机波动
+      const random = (Math.random() - 0.5) * 0.2; // 减小随机波动
       
       // 限制波动范围
       let newValue = base + wave + random;
-      newValue = Math.max(16, Math.min(24, newValue));
+      newValue = Math.max(19.7, Math.min(20.3, newValue));
       
       // 平滑过渡
-      const smoothValue = lastValue * 0.7 + newValue * 0.3;
+      const smoothValue = lastValue * 0.8 + newValue * 0.2;
       this.chartData.push(smoothValue);
       
       this.chainChart.setOption({
@@ -1294,12 +1306,12 @@ export default {
       }
     },
     
-    // 初始化数据流
+    // 初始化数据流 - 改为5个区块消失一个
     initDataStream() {
       if (!this.dataStreaming) return;
       
       this.dataStreamInterval = setInterval(() => {
-        // 生成新区块
+        // 私有链：生成新区块
         this.currentBlockHeight++;
         
         const newBlock = {
@@ -1307,38 +1319,41 @@ export default {
           hash: '0x' + Array.from({ length: 40 }, () => 
             Math.floor(Math.random() * 16).toString(16)
           ).join(''),
-          productId: `AX${new Date().toISOString().slice(2,10).replace(/-/g,'')}${String(Math.floor(Math.random() * 1000)).padStart(3,'0')}`,
+          productId: this.generateProductId(),
           timestamp: Date.now(),
           data: {
-            product: '工业半轴',
-            type: ['A型','B型','C型'][Math.floor(Math.random() * 3)],
+            product: this.generateProductId(),
+            type: this.productTypes[Math.floor(Math.random() * this.productTypes.length)],
             specification: ['Φ45×1200mm','Φ50×1500mm','Φ40×1000mm'][Math.floor(Math.random() * 3)],
             material: ['40Cr','45#钢','42CrMo'][Math.floor(Math.random() * 3)],
             process: ['切割','压花键','钻孔','抛丸','精车','探伤','包装'][Math.floor(Math.random() * 7)],
             quality: ['A级','B级','C级'][Math.floor(Math.random() * 3)],
-            temperature: `${Math.floor(Math.random() * 50) + 780}℃`,
-            pressure: `${Math.floor(Math.random() * 30) + 90}MPa`,
-            duration: `${Math.floor(Math.random() * 20) + 30}min`
+            temperature: `${Math.floor(Math.random() * 30) + 780}℃`,
+            pressure: `${Math.floor(Math.random() * 20) + 90}MPa`,
+            duration: `${Math.floor(Math.random() * 15) + 30}min`
           }
         };
         
-        // 添加到第一条链
+        // 添加到私有链
         this.chain1Blocks.unshift(newBlock);
-        // 五个区块才消失一个
+        // 五个区块就消失一个
         if (this.chain1Blocks.length > 5) {
           this.chain1Blocks.pop();
         }
         
-        // 每两个区块添加一个到第二条链
-        if (this.currentBlockHeight % 2 === 0) {
+        // 联盟链：每三个区块添加一个
+        if (this.currentBlockHeight % 3 === 0) {
+          this.allianceChainHeight++;
+          
           const chain2Block = {...newBlock};
-          chain2Block.number = this.currentBlockHeight - 5;
+          chain2Block.number = this.allianceChainHeight;
           chain2Block.hash = '0x' + Array.from({ length: 40 }, () => 
             Math.floor(Math.random() * 16).toString(16)
           ).join('');
+          chain2Block.productId = this.generateProductId();
           
           this.chain2Blocks.unshift(chain2Block);
-          // 五个区块才消失一个
+          // 五个区块就消失一个
           if (this.chain2Blocks.length > 5) {
             this.chain2Blocks.pop();
           }
@@ -1346,7 +1361,7 @@ export default {
         
         // 更新统计数据
         this.blockchainStats.totalBlocks = this.currentBlockHeight;
-        this.blockchainStats.todayTransactions = parseInt(this.blockchainStats.todayTransactions) + Math.floor(Math.random() * 3) + 1;
+        this.blockchainStats.todayTransactions = parseInt(this.blockchainStats.todayTransactions) + Math.floor(Math.random() * 2) + 1;
         
         this.stats[0].value = this.formatNumber(this.currentBlockHeight);
         this.stats[1].value = this.formatNumber(this.blockchainStats.todayTransactions);
@@ -1424,11 +1439,11 @@ export default {
       this.showMessageFn(`切换到${modeNames[this.dataMode]}模式`, 'info');
     },
     
-    // 获取节点样式
+    // 获取节点样式 - 调整节点间距以适应5个节点
     getNodeStyle(index, chain) {
       const baseDelay = index * 0.1;
-      const translateX = index * 80;
-      const translateY = chain === 'chain1' ? -50 : 30; // 向上调整位置
+      const translateX = index * 60; // 减小间距以适应5个节点
+      const translateY = chain === 'chain1' ? -50 : 30;
       const scale = 1 + (index * 0.05);
       
       return {
@@ -1438,10 +1453,10 @@ export default {
       };
     },
     
-    // 获取链间连接线样式
+    // 获取链间连接线样式 - 调整位置以适应5个节点
     getInterChainLineStyle(index) {
-      const translateX = index * 80 + 35;
-      const height = 80; // 两条链之间的距离
+      const translateX = index * 60 + 25; // 调整位置
+      const height = 80;
       
       return {
         left: `${translateX}px`,
@@ -2079,51 +2094,105 @@ export default {
   overflow: visible;
 }
 
-/* 两条主链连接线 */
+/* 链标签 - 只调整私有链位置 */
+.light-theme .chain-label {
+  position: absolute;
+  z-index: 10;
+  font-size: 12px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+/* 私有链标签 - 向下移动 */
+.light-theme .private-chain {
+  top: 42%;
+  left: 2%;
+  transform: translateY(-50%);
+}
+
+/* 联盟链标签 - 保持位置不变 */
+.light-theme .alliance-chain {
+  top: 68%;
+  left: 2%;
+  transform: translateY(-50%);
+}
+
+.light-theme .chain-tag {
+  padding: 5px 12px;
+  border-radius: 14px;
+  border: 1.5px solid;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  backdrop-filter: blur(5px);
+}
+
+.light-theme .private-chain .chain-tag {
+  border-color: #0a66cc;
+  color: #0a66cc;
+  background: rgba(10, 102, 204, 0.05);
+}
+
+.light-theme .alliance-chain .chain-tag {
+  border-color: #00a86b;
+  color: #00a86b;
+  background: rgba(0, 168, 107, 0.05);
+}
+
+/* 两条主链连接线 - 调整以适应5个节点 */
 .light-theme .chain-line {
   position: absolute;
-  left: 10%;
-  right: 10%;
+  left: 15%; /* 增加左边距 */
+  right: 15%; /* 增加右边距 */
   height: 2px;
+  z-index: 1;
+}
+
+.light-theme .main-chain-line {
+  top: 35%;
+  transform: translateY(-50%);
   background: linear-gradient(90deg, 
     transparent,
     rgba(10, 102, 204, 0.4),
     rgba(10, 102, 204, 0.4),
     transparent
   );
-  z-index: 1;
-}
-
-.light-theme .main-chain-line {
-  top: 35%; /* 向上调整位置 */
-  transform: translateY(-50%);
 }
 
 .light-theme .secondary-chain-line {
-  top: 65%; /* 向上调整位置 */
+  top: 65%;
   transform: translateY(-50%);
+  background: linear-gradient(90deg, 
+    transparent,
+    rgba(0, 168, 107, 0.4),
+    rgba(0, 168, 107, 0.4),
+    transparent
+  );
 }
 
-/* 链容器 */
+/* 链容器 - 调整以适应5个节点 */
 .light-theme .chain-nodes {
   position: absolute;
   top: 0;
-  left: 10%;
-  width: 80%;
+  left: 15%; /* 增加左边距 */
+  width: 70%; /* 减少宽度以适应5个节点 */
   height: 100%;
   z-index: 2;
 }
 
 .light-theme .chain-1 {
-  top: 35%; /* 向上调整位置 */
+  top: 35%;
   transform: translateY(-50%);
 }
 
 .light-theme .chain-2 {
-  top: 65%; /* 向上调整位置 */
+  top: 65%;
   transform: translateY(-50%);
 }
 
+/* 调整节点样式以适应5个节点 */
 .light-theme .block-node {
   position: absolute;
   left: 0;
@@ -2133,9 +2202,10 @@ export default {
   z-index: 2;
 }
 
+/* 调整节点大小以适应5个节点 */
 .light-theme .node-core {
-  width: 65px;
-  height: 65px;
+  width: 58px;
+  height: 58px;
   background: radial-gradient(
     circle at 30% 30%,
     rgba(10, 102, 204, 0.2),
@@ -2160,16 +2230,15 @@ export default {
     rgba(0, 168, 107, 0.2),
     rgba(255, 255, 255, 0.9)
   );
+  box-shadow: 0 4px 12px rgba(0, 168, 107, 0.15);
 }
 
 @keyframes nodeFloat {
   0%, 100% {
     transform: translateY(0) scale(1);
-    box-shadow: 0 4px 12px rgba(10, 102, 204, 0.15);
   }
   50% {
     transform: translateY(-8px) scale(1.04);
-    box-shadow: 0 8px 20px rgba(10, 102, 204, 0.25);
   }
 }
 
@@ -2185,6 +2254,12 @@ export default {
   transform: scale(1.12);
 }
 
+.light-theme .node-core.secondary:hover {
+  border-color: #00a86b;
+  box-shadow: 0 0 30px rgba(0, 168, 107, 0.4);
+  transform: scale(1.12);
+}
+
 .light-theme .node-pulse {
   position: absolute;
   top: 0;
@@ -2192,9 +2267,16 @@ export default {
   right: 0;
   bottom: 0;
   border-radius: 50%;
-  background: rgba(10, 102, 204, 0.2);
   animation: pulse 2s ease-out infinite;
   z-index: -1;
+}
+
+.light-theme .node-core .node-pulse {
+  background: rgba(10, 102, 204, 0.2);
+}
+
+.light-theme .node-core.secondary .node-pulse {
+  background: rgba(0, 168, 107, 0.2);
 }
 
 .light-theme .node-content {
@@ -2202,8 +2284,9 @@ export default {
   z-index: 1;
 }
 
+/* 调整节点文字大小 */
 .light-theme .node-number {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
   color: #0a66cc;
   text-shadow: 0 0 5px rgba(10, 102, 204, 0.2);
@@ -2211,19 +2294,21 @@ export default {
 
 .light-theme .node-core.secondary .node-number {
   color: #00a86b;
+  text-shadow: 0 0 5px rgba(0, 168, 107, 0.2);
 }
 
 .light-theme .node-time {
-  font-size: 10px;
+  font-size: 9px;
   color: rgba(0, 0, 0, 0.6);
   margin-top: 2px;
 }
 
+/* 调整连接线长度以适应5个节点 */
 .light-theme .node-connection {
   position: absolute;
   top: 50%;
   left: 100%;
-  width: 75px;
+  width: 55px; /* 减少连接线长度 */
   height: 2px;
   background: linear-gradient(90deg, 
     rgba(10, 102, 204, 0.4),
@@ -2239,13 +2324,13 @@ export default {
   );
 }
 
-/* 链间连接线 */
+/* 链间连接线 - 调整以适应5个节点 */
 .light-theme .inter-chain-connections {
   position: absolute;
-  top: 35%; /* 向上调整位置 */
-  left: 10%;
-  width: 80%;
-  height: 30%; /* 增加高度以匹配新的位置 */
+  top: 35%;
+  left: 15%;
+  width: 70%;
+  height: 30%;
   z-index: 1;
 }
 
@@ -3163,12 +3248,25 @@ export default {
   }
   
   .light-theme .node-core {
-    width: 55px;
-    height: 55px;
+    width: 52px;
+    height: 52px;
   }
   
   .light-theme .node-number {
-    font-size: 13px;
+    font-size: 12px;
+  }
+  
+  .light-theme .node-connection {
+    width: 50px;
+  }
+  
+  /* 响应式下调整链标签位置 */
+  .light-theme .private-chain {
+    left: 1%;
+  }
+  
+  .light-theme .alliance-chain {
+    left: 1%;
   }
 }
 
@@ -3187,6 +3285,17 @@ export default {
   
   .light-theme .left-panel, .light-theme .right-panel {
     order: 2;
+  }
+  
+  /* 在小屏幕下进一步调整链标签位置 */
+  .light-theme .private-chain {
+    left: 3%;
+    top: 40%;
+  }
+  
+  .light-theme .alliance-chain {
+    left: 3%;
+    top: 66%;
   }
 }
 
@@ -3219,6 +3328,21 @@ export default {
   
   .light-theme .system-status, .light-theme .data-info {
     justify-content: flex-start;
+  }
+  
+  /* 在移动设备上调整链标签位置 */
+  .light-theme .chain-label {
+    font-size: 11px;
+  }
+  
+  .light-theme .private-chain {
+    left: 5%;
+    top: 38%;
+  }
+  
+  .light-theme .alliance-chain {
+    left: 5%;
+    top: 64%;
   }
 }
 </style>

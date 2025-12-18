@@ -5,7 +5,7 @@
       <div class="system-info">
         <div class="logo">
           <i class="el-icon-s-platform"></i>
-          <span class="system-name">车间AI智能检测系统</span>
+          <span class="system-name">智能化汽车半轴AI检测系统</span>
         </div>
         <div class="current-time">{{ currentTime }}</div>
       </div>

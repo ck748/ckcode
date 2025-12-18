@@ -9,7 +9,8 @@
         <div class="block-content">
           <div class="block-title">区块链</div>
           <div class="block-subtitle">已部署区块链</div>
-          <div class="block-value">2条</div>
+          <div class="transaction-item">私有链</div>
+          <div class="transaction-item">联盟链</div>
         </div>
       </div>
       

@@ -16,7 +16,7 @@
     <!-- 顶部导航 -->
     <header class="factory-header">
       <div class="header-content">
-        <h1 class="main-title">智能生产监控中心</h1>
+        <h1 class="main-title">智能汽车半轴生产监控中心</h1>
         <div class="header-controls">
           <el-button 
             icon="el-icon-refresh" 
