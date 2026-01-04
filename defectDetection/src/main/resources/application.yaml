@@ -57,18 +57,18 @@ blockchain:
   # 是否启用区块链功能
   enabled: true
   # FISCO BCOS节点配置(使用channel端口)
-  peers: 192.168.1.105:20200  # channel_listen_port
+  peers: 192.168.1.104:20200  # 本地节点（与qkl项目一致）
   # 群组ID
   group-id: 1
   # 证书路径
+
   cert-path: blockchain/conf
-  # 私钥(Demo8的私钥)
+  # 私钥
   hex-private-key: abce280926debccedf8d7b6555b26353573e4cbfa11b4b23fc2cdca9559ddd49
-  # 智能合约地址配置(Demo8的合约地址)
+  # 智能合约地址配置（来自qkl项目）
   contracts:
-    defect-trace: ""  # 
-    data-center: "0xace4077dca0f685be6c7acdf53e689a9cdd3ede4"   # 数据中心合约地址（来自 hhhhh）
-    workshop1: "0x2964c51e0d3f6da489e7f4e662d2b1cbb9575daf"  # 车间1合约地址（来自 hhhhh）
-    workshop2: "0xdab5e0223759e0042479ebae69d79f21d4c07ecc"  # 车间2合约地址（来自 hhhhh）
-    workshop3: "0x5e84018cafaf55b33e5456ec93faf629e09678c1"  # 车间3合约地址（来自 hhhhh）
-    workshop4: "0xb02523d218c52925039388545f5ecee406eaff20"  # 车间4合约地址（来自 hhhhh）
+    raw-material: "0x179396f45e1cde809780a7b077c026fcb317548f"  # 原材料合约
+    workshop1: "0xf11054f8bc2e4d78a0ded5aa0ead04debc9401f4"  # 车间1合约（来自qkl）
+    workshop2: "0xcd3775b2ccce8f5fb108c53597b22bf81d5058d1"  # 车间2合约（来自qkl）
+    workshop3: "0x8ad7027e3277449c079ba03641165f76d2c1d3db"  # 车间3合约（来自qkl）
+    workshop4: "0x94fa2750dbf6fa43f7ca24f0e667b3e167133226"  # 车间4合约（来自qkl）

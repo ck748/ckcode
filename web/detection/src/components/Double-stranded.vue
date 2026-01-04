@@ -8,8 +8,28 @@
         </div>
         <div class="block-content">
           <div class="block-title">区块链</div>
-          <div class="block-subtitle">已部署区块链</div>
-          <div class="block-value">2条</div>
+          <div class="chain-container">
+            <div class="chain-item">
+              <div class="chain-line">
+                <div class="line-dot blue-dot"></div>
+                <div class="line-bar blue-bar"></div>
+              </div>
+              <div class="chain-content">
+                <span class="chain-name">私有链</span>
+                <span class="chain-desc">三群组八节点</span>
+              </div>
+            </div>
+            <div class="chain-item">
+              <div class="chain-line">
+                <div class="line-dot blue-dot"></div>
+                <div class="line-bar blue-bar"></div>
+              </div>
+              <div class="chain-content">
+                <span class="chain-name">联盟链</span>
+                <span class="chain-desc">单群组四节点</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -42,10 +62,10 @@
         <div class="block-content">
           <div class="block-title">事务支持</div>
           <div class="block-subtitle">支持事务形式</div>
-          <div class="block-value">8个</div>
+          <div class="block-value">12个</div>
           <div class="transaction-list">
             <div class="transaction-item">两阶段事务</div>
-            <div class="transaction-item">HTLC</div>
+            <div class="transaction-item">HPLC</div>
           </div>
         </div>
       </div>
@@ -302,6 +322,77 @@ export default {
   margin-bottom: 6px;
 }
 
+/* 区块链容器样式 - 蓝色线条效果 */
+.chain-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chain-item {
+  display: flex;
+  position: relative;
+  padding-left: 16px;
+}
+
+.chain-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.line-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: absolute;
+  top: 8px;
+}
+
+.blue-dot {
+  background-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.3);
+}
+
+.line-bar {
+  width: 2px;
+  position: absolute;
+  top: 20px;
+  bottom: 0;
+}
+
+.blue-bar {
+  background: linear-gradient(to bottom, #409eff, #66b1ff);
+}
+
+.chain-content {
+  flex: 1;
+  padding-left: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chain-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.chain-desc {
+  font-size: 13px;
+  color: #606266;
+  line-height: 1.4;
+}
+
+/* 事务支持项 - 保持原有样式 */
 .transaction-list {
   margin-top: 10px;
   padding-top: 10px;
@@ -508,6 +599,15 @@ export default {
     font-size: 22px;
   }
   
+  /* 在移动端调整chain-name字体大小 */
+  .chain-name {
+    font-size: 15px;
+  }
+  
+  .chain-desc {
+    font-size: 12px;
+  }
+  
   .info-table .label {
     width: 150px;
   }
@@ -553,6 +653,15 @@ export default {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+  
+  /* 在更小的屏幕上进一步调整chain-name字体大小 */
+  .chain-name {
+    font-size: 14px;
+  }
+  
+  .chain-desc {
+    font-size: 11px;
   }
 }
 </style>

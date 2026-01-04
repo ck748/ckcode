@@ -1,7 +1,7 @@
 package com.ggbond.defectdetection.controller;
 
 import com.ggbond.defectdetection.common.Result;
-import com.ggbond.defectdetection.service.blockchain.ProductTraceService;
+import com.ggbond.defectdetection.service.blockchain.NewProductTraceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ import java.util.Map;
 public class ProductTraceController {
 
     @Autowired
-    private ProductTraceService productTraceService;
+    private NewProductTraceService productTraceService;
 
     /**
      * 查询产品溯源信息

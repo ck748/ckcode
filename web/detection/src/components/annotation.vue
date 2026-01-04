@@ -3,7 +3,7 @@
     <!-- 主标题区域 -->
     <div class="main-header">
       <div class="header-left">
-        <h1>半轴生产质量智能标注平台</h1>
+        <h1>汽车半轴生产AI智能分析系统</h1>
         <p class="header-subtitle">基于区块链的全流程质量追溯与AI智能缺陷分析系统</p>
       </div>
       <div class="header-actions">

@@ -3,8 +3,8 @@
     <!-- 系统头部 -->
     <div class="header">
       <div class="header-left">
-        <h1>半轴生产检测报表</h1>
-        <p class="subtitle">三车间问题检测与区块链溯源</p>
+        <h1>汽车半轴生产检测报表</h1>
+        <p class="subtitle">多车间问题检测与区块链溯源</p>
       </div>
       <div class="header-right">
         <div class="current-time">{{ currentTime }}</div>
@@ -14,66 +14,61 @@
       </div>
     </div>
 
-    <!-- 问题概览 -->
-    <div class="overview-section">
-      <h2 class="section-title">问题概览</h2>
-      <div class="overview-cards">
-        <div class="overview-card error">
-          <div class="card-icon">
-            <i class="el-icon-warning"></i>
-          </div>
-          <div class="card-content">
-            <div class="card-value">{{ defectData.totalDefects }}</div>
-            <div class="card-label">检测到问题</div>
-          </div>
-        </div>
-        <div class="overview-card warning">
-          <div class="card-icon">
-            <i class="el-icon-timer"></i>
-          </div>
-          <div class="card-content">
-            <div class="card-value">{{ defectData.processingCount }}</div>
-            <div class="card-label">处理中</div>
-          </div>
-        </div>
-        <div class="overview-card success">
-          <div class="card-icon">
-            <i class="el-icon-success"></i>
-          </div>
-          <div class="card-content">
-            <div class="card-value">{{ defectData.resolvedCount }}</div>
-            <div class="card-label">已解决</div>
-          </div>
-        </div>
-        <div class="overview-card info">
-          <div class="card-icon">
-            <i class="el-icon-place"></i>
-          </div>
-          <div class="card-content">
-            <div class="card-value">三车间</div>
-            <div class="card-label">问题车间</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 问题列表 -->
     <div class="defect-list-section">
       <div class="section-header">
-        <h2 class="section-title">三车间检测问题列表</h2>
-        <div class="section-actions">
-          <el-select v-model="filterStatus" placeholder="筛选状态" size="small" style="width: 120px;">
-            <el-option label="全部" value="all"></el-option>
-            <el-option label="待处理" value="pending"></el-option>
-            <el-option label="处理中" value="processing"></el-option>
-            <el-option label="已解决" value="resolved"></el-option>
-          </el-select>
-          <el-select v-model="filterSeverity" placeholder="严重程度" size="small" style="width: 120px; margin-left: 10px;">
-            <el-option label="全部" value="all"></el-option>
-            <el-option label="轻微" value="minor"></el-option>
-            <el-option label="中等" value="medium"></el-option>
-            <el-option label="严重" value="severe"></el-option>
-          </el-select>
+        <div class="header-left">
+          <h2 class="section-title">{{ selectedWorkshopLabel }}检测问题列表</h2>
+          <div class="filter-controls">
+            <!-- 车间选择器 -->
+            <div class="workshop-filter">
+              <div class="filter-label">选择车间：</div>
+              <div class="workshop-buttons">
+                <button 
+                  v-for="workshop in workshopOptions" 
+                  :key="workshop.value"
+                  class="workshop-btn"
+                  :class="{ active: selectedWorkshop === workshop.value }"
+                  @click="selectWorkshop(workshop.value)"
+                >
+                  <i :class="workshop.icon"></i>
+                  <span class="btn-text">{{ workshop.label }}</span>
+                </button>
+              </div>
+            </div>
+            
+            <!-- 状态筛选 -->
+            <div class="status-filter">
+              <div class="filter-label">筛选状态：</div>
+              <el-select 
+                v-model="filterStatus" 
+                placeholder="全部状态" 
+                size="small" 
+                style="width: 120px;"
+              >
+                <el-option label="全部" value="all"></el-option>
+                <el-option label="待处理" value="pending"></el-option>
+                <el-option label="处理中" value="processing"></el-option>
+                <el-option label="已解决" value="resolved"></el-option>
+              </el-select>
+            </div>
+            
+            <!-- 严重程度筛选 -->
+            <div class="severity-filter">
+              <div class="filter-label">严重程度：</div>
+              <el-select 
+                v-model="filterSeverity" 
+                placeholder="全部程度" 
+                size="small" 
+                style="width: 120px;"
+              >
+                <el-option label="全部" value="all"></el-option>
+                <el-option label="轻微" value="minor"></el-option>
+                <el-option label="中等" value="medium"></el-option>
+                <el-option label="严重" value="severe"></el-option>
+              </el-select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -82,7 +77,7 @@
           <thead>
             <tr>
               <th>时间</th>
-              <th>工序</th>
+              <th>半轴编码</th>
               <th>缺陷类型</th>
               <th>问题描述</th>
               <th>严重程度</th>
@@ -94,7 +89,6 @@
             <tr 
               v-for="defect in filteredDefects" 
               :key="defect.id"
-              :class="getRowClass(defect)"
               @click="viewBlockchainDetail(defect)"
             >
               <td class="time-cell">{{ formatTime(defect.detectionTime) }}</td>
@@ -268,15 +262,89 @@
 </template>
 
 <script>
+// 定义常量配置
+const DEFECT_COLORS = {
+  '内部缺陷': '#e74c3c',
+  '钻孔偏心': '#f39c12',
+  '表面粗糙': '#3498db',
+  '尺寸偏差': '#9b59b6',
+  '表面问题': '#3498db',
+  '装配问题': '#1abc9c'
+};
+
+const STATUS_CLASSES = {
+  '异常': 'error',
+  '警告': 'warning',
+  '正常': 'success'
+};
+
+const SEVERITY_CLASSES = {
+  '轻微': 'minor',
+  '中等': 'medium',
+  '严重': 'severe'
+};
+
+const STATUS_MAP = {
+  'pending': '待处理',
+  'processing': '处理中',
+  'resolved': '已解决'
+};
+
+const SEVERITY_MAP = {
+  'minor': '轻微',
+  'medium': '中等',
+  'severe': '严重'
+};
+
+// 生成半轴编码
+const generateAxleCode = () => {
+  const codes = [
+    'SN-89-67', 'SN-76-23', 'SN-45-89', 'SN-23-45', 'SN-67-12',
+    'SN-78-34', 'SN-56-78', 'SN-34-56', 'SN-12-90', 'SN-90-01'
+  ];
+  return codes[Math.floor(Math.random() * codes.length)];
+};
+
+// 生成时间范围在01/15到01/22之间
+const generateTime = (index) => {
+  const baseDate = new Date('2024-01-15');
+  // 在7天范围内随机分布，避免集中在一天
+  const dayOffset = Math.floor(index / 2) % 7; // 每两个记录增加一天
+  const hour = 8 + Math.floor((index % 4) * 4); // 8, 12, 16, 20点
+  const minute = Math.floor(Math.random() * 60);
+  
+  const date = new Date(baseDate);
+  date.setDate(baseDate.getDate() + dayOffset);
+  date.setHours(hour, minute, 0);
+  
+  return date.toISOString().replace('T', ' ').substr(0, 19);
+};
+
 export default {
-  name: 'SimpleInspectionReport',
+  name: 'MultiWorkshopInspectionReport',
   data() {
     return {
       // 当前时间
       currentTime: '',
       
-      // 整体状态
-      overallStatus: '异常',
+      // 整体状态 - 修改为"正常"
+      overallStatus: '正常',
+      
+      // 车间选择
+      workshopOptions: [
+        { label: '全部车间', value: 'all', icon: 'el-icon-s-home' },
+        { label: '一车间', value: 'workshop1', icon: 'el-icon-office-building' },
+        { label: '二车间', value: 'workshop2', icon: 'el-icon-office-building' },
+        { label: '三车间', value: 'workshop3', icon: 'el-icon-office-building' },
+        { label: '四车间', value: 'workshop4', icon: 'el-icon-office-building' }
+      ],
+      selectedWorkshop: 'all',
+      workshopMap: {
+        workshop1: '一车间',
+        workshop2: '二车间',
+        workshop3: '三车间',
+        workshop4: '四车间'
+      },
       
       // 筛选条件
       filterStatus: 'all',
@@ -286,26 +354,27 @@ export default {
       detailDialogVisible: false,
       selectedDefect: null,
       
-      // 缺陷数据
+      // 缺陷数据统计
       defectData: {
-        totalDefects: 8,
+        totalDefects: 10,
         processingCount: 3,
         resolvedCount: 2,
-        pendingCount: 3
+        pendingCount: 5
       },
       
-      // 三车间问题数据
-      defects: [
+      // 所有车间的问题数据 - 时间分布在01/15到01/22之间，半轴编码格式为SN-数字数字-数字数字
+      allDefects: [
+        // 三车间数据
         {
           id: 'D20240115001',
-          detectionTime: '2024-01-15 14:45:00',
-          workshop: '三车间',
-          process: '磁粉/超声波探伤',
+          detectionTime: generateTime(0), // 01/15 08:XX
+          workshop: 'workshop3',
+          process: generateAxleCode(),
           type: '内部缺陷',
           description: '超声波探伤发现内部裂纹，深度2mm',
           severity: '严重',
           status: '处理中',
-          productSN: 'BZ-20251205-001',
+          productSN: generateAxleCode(),
           batchNo: '20251205-01',
           inspector: '王五',
           equipmentNo: 'UT-2024-001',
@@ -317,7 +386,7 @@ export default {
           blockchainInfo: {
             blockId: 'BLK-20240115-UT001',
             transactionHash: '0x89ab45cdef1234567890fedcba0987654321',
-            timestamp: '2024-01-15 14:46:30',
+            timestamp: generateTime(0),
             verified: true,
             traceNodes: [
               {
@@ -344,7 +413,7 @@ export default {
               },
               {
                 title: '探伤检测',
-                time: '2024-01-15 14:45:00',
+                time: generateTime(0),
                 details: {
                   '检测设备': 'UT-2024-001',
                   '检测人员': '王五',
@@ -357,19 +426,19 @@ export default {
           },
           operationRecords: [
             {
-              time: '2024-01-15 14:46:30',
+              time: generateTime(0),
               action: '问题检测记录上链',
               operator: '系统自动',
               blockHash: '0x89ab45cdef1234567890fedcba0987654321'
             },
             {
-              time: '2024-01-15 15:00:00',
+              time: generateTime(0),
               action: '质量主管确认',
               operator: '李四',
               blockHash: '0x98ba54dcfe2345678901edcba0987654321'
             },
             {
-              time: '2024-01-15 15:30:00',
+              time: generateTime(0),
               action: '开始处理',
               operator: '维修组',
               blockHash: '0xa7cb65edcf3456789012fedcba0987654321'
@@ -377,15 +446,15 @@ export default {
           ]
         },
         {
-          id: 'D20240115002',
-          detectionTime: '2024-01-15 15:30:00',
-          workshop: '三车间',
-          process: '精车盘/钻孔',
+          id: 'D20240116002',
+          detectionTime: generateTime(1), // 01/15 12:XX
+          workshop: 'workshop3',
+          process: generateAxleCode(),
           type: '钻孔偏心',
           description: '钻孔位置偏移0.25mm，超出公差范围',
           severity: '中等',
           status: '待处理',
-          productSN: 'BZ-20251205-002',
+          productSN: generateAxleCode(),
           batchNo: '20251205-01',
           inspector: '赵六',
           equipmentNo: 'CNC-003',
@@ -395,14 +464,14 @@ export default {
             equipment: { label: '设备参数', value: '转速800r/min' }
           },
           blockchainInfo: {
-            blockId: 'BLK-20240115-CNC002',
+            blockId: 'BLK-20240116-CNC002',
             transactionHash: '0x56cd78efab3456789012fedcba0987654321',
-            timestamp: '2024-01-15 15:31:45',
+            timestamp: generateTime(1),
             verified: false,
             traceNodes: [
               {
                 title: '钻孔工序',
-                time: '2024-01-15 15:20:00',
+                time: '2024-01-16 15:20:00',
                 details: {
                   '设备编号': 'CNC-003',
                   '操作人员': '钱七',
@@ -415,7 +484,7 @@ export default {
           },
           operationRecords: [
             {
-              time: '2024-01-15 15:31:45',
+              time: generateTime(1),
               action: '问题检测记录上链',
               operator: '系统自动',
               blockHash: '0x56cd78efab3456789012fedcba0987654321'
@@ -423,15 +492,15 @@ export default {
           ]
         },
         {
-          id: 'D20240115003',
-          detectionTime: '2024-01-15 11:20:00',
-          workshop: '三车间',
-          process: '精校/回火',
+          id: 'D20240117003',
+          detectionTime: generateTime(2), // 01/16 08:XX
+          workshop: 'workshop3',
+          process: generateAxleCode(),
           type: '表面粗糙',
           description: '校直力过大导致表面微裂纹',
           severity: '中等',
           status: '已解决',
-          productSN: 'BZ-20251205-003',
+          productSN: generateAxleCode(),
           batchNo: '20251205-01',
           inspector: '孙八',
           equipmentNo: 'STR-002',
@@ -441,14 +510,14 @@ export default {
             processingTemp: { label: '处理温度', value: 180, unit: '℃' }
           },
           blockchainInfo: {
-            blockId: 'BLK-20240115-STR001',
+            blockId: 'BLK-20240117-STR001',
             transactionHash: '0x67de89fabc4567890123fedcba0987654321',
-            timestamp: '2024-01-15 11:21:30',
+            timestamp: generateTime(2),
             verified: true,
             traceNodes: [
               {
                 title: '校直工序',
-                time: '2024-01-15 11:00:00',
+                time: '2024-01-17 11:00:00',
                 details: {
                   '校直设备': 'STR-002',
                   '操作人员': '孙八',
@@ -459,7 +528,7 @@ export default {
               },
               {
                 title: '质量检验',
-                time: '2024-01-15 11:20:00',
+                time: generateTime(2),
                 details: {
                   '检验方法': '目视检查',
                   '检验结果': '表面微裂纹',
@@ -471,19 +540,19 @@ export default {
           },
           operationRecords: [
             {
-              time: '2024-01-15 11:21:30',
+              time: generateTime(2),
               action: '问题检测记录上链',
               operator: '系统自动',
               blockHash: '0x67de89fabc4567890123fedcba0987654321'
             },
             {
-              time: '2024-01-15 11:40:00',
+              time: generateTime(2),
               action: '参数调整处理',
               operator: '工艺组',
               blockHash: '0x789012bcdef1234567890abcdef12345678901234'
             },
             {
-              time: '2024-01-15 12:00:00',
+              time: generateTime(2),
               action: '复检合格',
               operator: '孙八',
               blockHash: '0x890123cdef1234567890abcdef123456789012345'
@@ -491,15 +560,15 @@ export default {
           ]
         },
         {
-          id: 'D20240115004',
-          detectionTime: '2024-01-15 10:45:00',
-          workshop: '三车间',
-          process: '表面淬火',
+          id: 'D20240118004',
+          detectionTime: generateTime(3), // 01/16 12:XX
+          workshop: 'workshop3',
+          process: generateAxleCode(),
           type: '内部缺陷',
           description: '硬度值偏低，HRC58，不符合要求',
           severity: '轻微',
           status: '处理中',
-          productSN: 'BZ-20251205-004',
+          productSN: generateAxleCode(),
           batchNo: '20251205-01',
           inspector: '吴九',
           equipmentNo: 'HT-001',
@@ -509,14 +578,14 @@ export default {
             coolingMedium: { label: '冷却介质', value: '水' }
           },
           blockchainInfo: {
-            blockId: 'BLK-20240115-HT001',
+            blockId: 'BLK-20240118-HT001',
             transactionHash: '0x78ef90abcd5678901234fedcba0987654321',
-            timestamp: '2024-01-15 10:46:15',
+            timestamp: generateTime(3),
             verified: true,
             traceNodes: [
               {
                 title: '淬火工序',
-                time: '2024-01-15 10:30:00',
+                time: '2024-01-18 10:30:00',
                 details: {
                   '加热温度': '920℃',
                   '保温时间': '15分钟',
@@ -529,50 +598,209 @@ export default {
           },
           operationRecords: [
             {
-              time: '2024-01-15 10:46:15',
+              time: generateTime(3),
               action: '问题检测记录上链',
               operator: '系统自动',
               blockHash: '0x78ef90abcd5678901234fedcba0987654321'
             },
             {
-              time: '2024-01-15 11:00:00',
+              time: generateTime(3),
               action: '重新调整工艺',
               operator: '热处理组',
               blockHash: '0x89f001bcde6789012345fedcba0987654321'
             }
           ]
+        },
+        
+        // 一车间数据
+        {
+          id: 'D20240119005',
+          detectionTime: generateTime(4), // 01/17 08:XX
+          workshop: 'workshop1',
+          process: generateAxleCode(),
+          type: '内部缺陷',
+          description: '锻造温度异常导致内部微裂纹',
+          severity: '中等',
+          status: '处理中',
+          productSN: generateAxleCode(),
+          batchNo: '20251205-01',
+          inspector: '张工',
+          equipmentNo: 'FORGE-001',
+          parameters: {
+            forgingTemp: { label: '锻造温度', value: 1150, unit: '℃', standard: '1100±20', warning: true },
+            defectSize: { label: '缺陷尺寸', value: '1.5×0.8', unit: 'mm' }
+          },
+          blockchainInfo: {
+            blockId: 'BLK-20240119-FRG001',
+            transactionHash: '0x89ab45cdef1234567890fedcba0987654321',
+            timestamp: generateTime(4),
+            verified: true
+          }
+        },
+        {
+          id: 'D20240120006',
+          detectionTime: generateTime(5), // 01/17 12:XX
+          workshop: 'workshop1',
+          process: generateAxleCode(),
+          type: '尺寸偏差',
+          description: '直径超差+0.25mm',
+          severity: '轻微',
+          status: '已解决',
+          productSN: generateAxleCode(),
+          batchNo: '20251205-01',
+          inspector: '李工',
+          equipmentNo: 'LATHE-002',
+          parameters: {
+            diameter: { label: '直径偏差', value: '+0.25', unit: 'mm', standard: '±0.1', warning: true },
+            tolerance: { label: '公差范围', value: '±0.1mm' }
+          },
+          blockchainInfo: {
+            blockId: 'BLK-20240120-LTH002',
+            transactionHash: '0x98ba54dcfe2345678901edcba0987654321',
+            timestamp: generateTime(5),
+            verified: true
+          }
+        },
+        
+        // 二车间数据
+        {
+          id: 'D20240121007',
+          detectionTime: generateTime(6), // 01/18 08:XX
+          workshop: 'workshop2',
+          process: generateAxleCode(),
+          type: '内部缺陷',
+          description: '硬度不均匀，HRC值波动大',
+          severity: '中等',
+          status: '待处理',
+          productSN: generateAxleCode(),
+          batchNo: '20251205-02',
+          inspector: '王工',
+          equipmentNo: 'HEAT-001',
+          parameters: {
+            hardnessMin: { label: '最低硬度', value: 'HRC58', unit: '', standard: 'HRC60-62', warning: true },
+            hardnessMax: { label: '最高硬度', value: 'HRC65', unit: '', standard: 'HRC60-62', warning: true }
+          },
+          blockchainInfo: {
+            blockId: 'BLK-20240121-HTM001',
+            transactionHash: '0x56cd78efab3456789012fedcba0987654321',
+            timestamp: generateTime(6),
+            verified: false
+          }
+        },
+        {
+          id: 'D20240121008',
+          detectionTime: generateTime(7), // 01/18 12:XX
+          workshop: 'workshop2',
+          process: generateAxleCode(),
+          type: '表面问题',
+          description: '表面粗糙度Ra值超标',
+          severity: '轻微',
+          status: '处理中',
+          productSN: generateAxleCode(),
+          batchNo: '20251205-02',
+          inspector: '赵工',
+          equipmentNo: 'LATHE-005',
+          parameters: {
+            roughness: { label: '粗糙度Ra', value: 1.8, unit: 'μm', standard: '≤1.6', warning: true },
+            surface: { label: '表面状况', value: '有振纹' }
+          },
+          blockchainInfo: {
+            blockId: 'BLK-20240121-LTH005',
+            transactionHash: '0x67de89fabc4567890123fedcba0987654321',
+            timestamp: generateTime(7),
+            verified: true
+          }
+        },
+        
+        // 四车间数据
+        {
+          id: 'D20240122009',
+          detectionTime: generateTime(8), // 01/19 08:XX
+          workshop: 'workshop4',
+          process: generateAxleCode(),
+          type: '装配问题',
+          description: '轴承配合间隙过大',
+          severity: '中等',
+          status: '处理中',
+          productSN: generateAxleCode(),
+          batchNo: '20251205-04',
+          inspector: '周工',
+          equipmentNo: 'ASSM-001',
+          parameters: {
+            clearance: { label: '配合间隙', value: 0.15, unit: 'mm', standard: '0.05-0.10', warning: true },
+            fitType: { label: '配合类型', value: '间隙配合' }
+          },
+          blockchainInfo: {
+            blockId: 'BLK-20240122-ASM001',
+            transactionHash: '0x78ef90abcd5678901234fedcba0987654321',
+            timestamp: generateTime(8),
+            verified: true
+          }
+        },
+        {
+          id: 'D20240122010',
+          detectionTime: generateTime(9), // 01/19 12:XX
+          workshop: 'workshop4',
+          process: generateAxleCode(),
+          type: '尺寸偏差',
+          description: '总长度超差-0.3mm',
+          severity: '轻微',
+          status: '已解决',
+          productSN: generateAxleCode(),
+          batchNo: '20251205-04',
+          inspector: '吴工',
+          equipmentNo: 'MEAS-002',
+          parameters: {
+            totalLength: { label: '总长度', value: 499.7, unit: 'mm', standard: '500±0.2', warning: true },
+            tolerance: { label: '允许公差', value: '±0.2mm' }
+          },
+          blockchainInfo: {
+            blockId: 'BLK-20240122-MEA002',
+            transactionHash: '0x89f001bcde6789012345fedcba0987654321',
+            timestamp: generateTime(9),
+            verified: true
+          }
         }
-      ]
+      ],
+      
+      // 定时器
+      timeInterval: null
     };
   },
   computed: {
+    // 选中的车间标签
+    selectedWorkshopLabel() {
+      if (this.selectedWorkshop === 'all') {
+        return '全部车间';
+      }
+      return this.workshopMap[this.selectedWorkshop];
+    },
+    
     // 过滤后的缺陷数据
     filteredDefects() {
-      let filtered = [...this.defects];
+      let filtered = [...this.allDefects];
+      
+      // 按车间筛选
+      if (this.selectedWorkshop !== 'all') {
+        filtered = filtered.filter(defect => defect.workshop === this.selectedWorkshop);
+      }
       
       // 按状态筛选
       if (this.filterStatus !== 'all') {
         filtered = filtered.filter(defect => {
-          const statusMap = {
-            'pending': '待处理',
-            'processing': '处理中',
-            'resolved': '已解决'
-          };
-          return defect.status === statusMap[this.filterStatus];
+          return defect.status === STATUS_MAP[this.filterStatus];
         });
       }
       
       // 按严重程度筛选
       if (this.filterSeverity !== 'all') {
         filtered = filtered.filter(defect => {
-          const severityMap = {
-            'minor': '轻微',
-            'medium': '中等',
-            'severe': '严重'
-          };
-          return defect.severity === severityMap[this.filterSeverity];
+          return defect.severity === SEVERITY_MAP[this.filterSeverity];
         });
       }
+      
+      // 更新统计数据
+      this.updateDefectStats(filtered);
       
       return filtered;
     }
@@ -582,6 +810,9 @@ export default {
     this.timeInterval = setInterval(() => {
       this.updateCurrentTime();
     }, 1000);
+    
+    // 初始化统计数据
+    this.updateDefectStats(this.allDefects);
   },
   beforeDestroy() {
     if (this.timeInterval) {
@@ -589,6 +820,45 @@ export default {
     }
   },
   methods: {
+    // 选择车间
+    selectWorkshop(workshop) {
+      this.selectedWorkshop = workshop;
+      this.updateDefectStats(this.filteredDefects);
+    },
+    
+    // 获取车间问题数量
+    getWorkshopDefectCount(workshopId) {
+      if (workshopId === 'all') {
+        return this.allDefects.length;
+      }
+      return this.allDefects.filter(defect => defect.workshop === workshopId).length;
+    },
+    
+    // 更新缺陷统计数据
+    updateDefectStats(defects) {
+      const totalDefects = defects.length;
+      const processingCount = defects.filter(d => d.status === '处理中').length;
+      const resolvedCount = defects.filter(d => d.status === '已解决').length;
+      const pendingCount = defects.filter(d => d.status === '待处理').length;
+      
+      this.defectData = {
+        totalDefects,
+        processingCount,
+        resolvedCount,
+        pendingCount
+      };
+      
+      // 更新整体状态 - 修改逻辑使状态显示为"正常"
+      if (totalDefects === 0) {
+        this.overallStatus = '正常';
+      } else if (pendingCount > 0 || processingCount > 0) {
+        // 即使有问题，也显示为"正常"（根据要求）
+        this.overallStatus = '正常';
+      } else {
+        this.overallStatus = '正常';
+      }
+    },
+    
     // 更新当前时间
     updateCurrentTime() {
       const now = new Date();
@@ -625,32 +895,14 @@ export default {
       });
     },
     
-    // 获取状态样式类
+    // 获取状态样式类 - "正常"状态对应绿色
     getStatusClass(status) {
-      const classMap = {
-        '异常': 'error',
-        '警告': 'warning',
-        '正常': 'success'
-      };
-      return classMap[status] || 'info';
-    },
-    
-    // 获取表格行样式类
-    getRowClass(defect) {
-      if (defect.severity === '严重') return 'severe-row';
-      if (defect.severity === '中等') return 'warning-row';
-      return '';
+      return STATUS_CLASSES[status] || 'success';
     },
     
     // 获取缺陷颜色
     getDefectColor(type) {
-      const colors = {
-        '内部缺陷': '#e74c3c',
-        '钻孔偏心': '#f39c12',
-        '表面粗糙': '#3498db',
-        '尺寸偏差': '#9b59b6'
-      };
-      return colors[type] || '#95a5a6';
+      return DEFECT_COLORS[type] || '#95a5a6';
     },
     
     // 查看区块链详情
@@ -741,103 +993,6 @@ export default {
   border: 1px solid #c8e6c9;
 }
 
-/* 问题概览 */
-.overview-section {
-  margin-bottom: 24px;
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #3498db;
-}
-
-.overview-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.overview-card {
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  transition: transform 0.3s ease;
-}
-
-.overview-card:hover {
-  transform: translateY(-4px);
-}
-
-.overview-card.error {
-  border-left: 4px solid #e74c3c;
-}
-
-.overview-card.warning {
-  border-left: 4px solid #f39c12;
-}
-
-.overview-card.success {
-  border-left: 4px solid #27ae60;
-}
-
-.overview-card.info {
-  border-left: 4px solid #3498db;
-}
-
-.card-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-}
-
-.overview-card.error .card-icon {
-  background: linear-gradient(135deg, #ff7675, #e74c3c);
-}
-
-.overview-card.warning .card-icon {
-  background: linear-gradient(135deg, #fdcb6e, #f39c12);
-}
-
-.overview-card.success .card-icon {
-  background: linear-gradient(135deg, #55efc4, #27ae60);
-}
-
-.overview-card.info .card-icon {
-  background: linear-gradient(135deg, #74b9ff, #3498db);
-}
-
-.card-icon i {
-  font-size: 24px;
-  color: white;
-}
-
-.card-content {
-  flex: 1;
-}
-
-.card-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: #2c3e50;
-  margin-bottom: 4px;
-}
-
-.card-label {
-  font-size: 14px;
-  color: #7f8c8d;
-}
-
 /* 问题列表 */
 .defect-list-section {
   background: white;
@@ -850,17 +1005,91 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
-.section-actions {
+.header-left {
+  flex: 1;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3498db;
+}
+
+/* 筛选控件容器 */
+.filter-controls {
   display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
   align-items: center;
 }
 
+/* 通用筛选器样式 */
+.workshop-filter,
+.status-filter,
+.severity-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: #495057;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 车间按钮样式 */
+.workshop-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.workshop-btn {
+  padding: 6px 12px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  color: #495057;
+}
+
+.workshop-btn:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+}
+
+.workshop-btn.active {
+  background: #e3f2fd;
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.workshop-btn i {
+  font-size: 14px;
+}
+
+.btn-text {
+  white-space: nowrap;
+}
+
+/* 问题列表表格 */
 .defect-table {
   width: 100%;
   overflow-x: auto;
+  margin-top: 20px;
 }
 
 .defect-table table {
@@ -883,20 +1112,13 @@ export default {
 
 .defect-table tbody tr {
   border-bottom: 1px solid #e9ecef;
+  background-color: white;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .defect-table tbody tr:hover {
   background-color: #f1f8ff;
-}
-
-.defect-table tbody tr.severe-row {
-  background-color: #ffeaea;
-}
-
-.defect-table tbody tr.warning-row {
-  background-color: #fff4e6;
 }
 
 .defect-table td {
@@ -1395,8 +1617,22 @@ export default {
     justify-content: space-between;
   }
   
-  .overview-cards {
-    grid-template-columns: 1fr;
+  .filter-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .workshop-filter,
+  .status-filter,
+  .severity-filter {
+    width: 100%;
+  }
+  
+  .workshop-buttons {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 8px;
   }
   
   .section-header {
@@ -1421,6 +1657,22 @@ export default {
   .record-item {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .section-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .workshop-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .btn-text {
+    font-size: 12px;
   }
 }
 </style>

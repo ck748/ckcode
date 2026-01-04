@@ -11,7 +11,7 @@
           <transition name="fade">
             <div v-show="!isCollapse" class="logo-info">
               <h2 class="logo-title">{{ title }}</h2>
-              <p class="logo-subtitle">区块链半轴溯源</p>
+              <p class="logo-subtitle">汽车半轴多模态跨链追溯AI诊断</p>
             </div>
           </transition>
         </div>
@@ -29,44 +29,38 @@
           class="blockchain-menu"
           router
         >
-          <!-- 主要功能 -->
-          <el-menu-item index="/daping" class="menu-item">
-            <i class="el-icon-data-line menu-icon"></i>
-            <span slot="title" class="menu-text">区块链溯源大屏</span>
-          </el-menu-item>
-
-          <el-menu-item index="/dashboard" class="menu-item">
-            <i class="el-icon-monitor menu-icon"></i>
-            <span slot="title" class="menu-text">生产监控</span>
-          </el-menu-item>
-
-          <!-- 溯源管理 -->
-          <el-submenu index="trace">
+          <!-- 数据中台 -->
+          <el-submenu index="data-center">
             <template slot="title">
-              <i class="el-icon-document menu-icon"></i>
-              <span class="menu-text">溯源管理</span>
+              <i class="el-icon-data-board menu-icon"></i>
+              <span class="menu-text">数据中台</span>
             </template>
-            <el-menu-item index="/query" class="submenu-item">
-              <i class="el-icon-search submenu-icon"></i>
-              <span>溯源查询</span>
-            </el-menu-item>
             <el-menu-item index="/info" class="submenu-item">
               <i class="el-icon-tickets submenu-icon"></i>
-              <span>整体检测</span>
+              <span>车间检测</span>
             </el-menu-item>
-            <el-menu-item index="/annotation" class="submenu-item">
-              <i class="el-icon-edit-outline submenu-icon"></i>
-              <span>车间标注</span>
+            <el-menu-item index="/dashboard" class="submenu-item">
+              <i class="el-icon-monitor submenu-icon"></i>
+              <span>工厂监控</span>
             </el-menu-item>
-            <el-menu-item index="/charts" class="submenu-item">
-              <i class="el-icon-data-analysis submenu-icon"></i>
-              <span>检测报表</span>
-            </el-menu-item>
-            <el-menu-item index="/warning" class="submenu-item">
-              <i class="el-icon-warning submenu-icon"></i>
-              <span>预警信息</span>
+             <el-menu-item index="/daping" class="submenu-item">
+              <i class="el-icon-data-line submenu-icon"></i>
+              <span>链上产数</span>
             </el-menu-item>
           </el-submenu>
+
+          <!-- AI指控专家 -->
+          <el-submenu index="ai">
+            <template slot="title">
+              <i class="el-icon-cpu menu-icon"></i>
+              <span class="menu-text">AI智控</span>
+            </template>
+            <el-menu-item index="/query" class="submenu-item">
+              <i class="el-icon-edit-outline submenu-icon"></i>
+              <span>查询分析</span>
+            </el-menu-item>
+          </el-submenu>
+
 
           <!-- 链上管理 -->
           <el-submenu index="chain">
@@ -74,6 +68,10 @@
               <i class="el-icon-connection menu-icon"></i>
               <span class="menu-text">链上管理</span>
             </template>
+              <el-menu-item index="/data-annotation" class="submenu-item">
+              <i class="el-icon-edit-outline submenu-icon"></i>
+              <span>存证工作台</span>
+              </el-menu-item>
               <el-menu-item index="/Double-stranded" class="submenu-item">
               <i class="el-icon-set-up submenu-icon"></i>
               <span>双链管理</span>
@@ -87,6 +85,23 @@
               <span>联盟链</span>
             </el-menu-item>
           </el-submenu>
+
+          <!-- 溯源管理 -->
+          <el-submenu index="trace">
+            <template slot="title">
+              <i class="el-icon-document menu-icon"></i>
+              <span class="menu-text">溯源管理</span>
+            </template>
+            <el-menu-item index="/charts" class="submenu-item">
+              <i class="el-icon-data-analysis submenu-icon"></i>
+              <span>检测报表</span>
+            </el-menu-item>
+            <el-menu-item index="/warning" class="submenu-item">
+              <i class="el-icon-warning submenu-icon"></i>
+              <span>预警信息</span>
+            </el-menu-item>
+          </el-submenu>
+
 
           <!-- 系统管理 -->
           <el-submenu index="system">
@@ -203,7 +218,7 @@
           </span>
         </div>
         <div class="footer-right">
-          <span class="copyright">© 2026 智轴链鉴系统 - 区块链半轴溯源平台</span>
+          <span class="copyright">© 2026 链证溯源 · 质驭精工系统 - 区块链半轴溯源平台</span>
         </div>
       </div>
     </div>
@@ -218,7 +233,7 @@ export default {
       isCollapse: false,
       asideWidth: '260px',
       collapseIcon: 'el-icon-s-fold',
-      title: '智轴链鉴系统',
+      title: '链证溯源系统',
       blockchainStatus: 'normal',
       lastUpdateTime: '',
       user: JSON.parse(localStorage.getItem('useradmin') || '{}')
@@ -331,11 +346,30 @@ export default {
   box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Logo区域 */
+/* 修复：Logo区域和菜单区域无缝连接 */
 .logo-section {
   padding: 24px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(10, 16, 40, 0.8);
+  background: linear-gradient(180deg, #0c1c30 0%, #1a2b3c 100%);
+  border-bottom: none !important; /* 移除底部边框，实现无缝连接 */
+  margin: 0;
+  position: relative;
+  z-index: 1001;
+}
+
+/* 添加过渡渐变效果，使连接更自然 */
+.logo-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(24, 144, 255, 0.2) 20%, 
+    rgba(24, 144, 255, 0.1) 50%, 
+    rgba(24, 144, 255, 0.2) 80%, 
+    transparent 100%);
 }
 
 .logo-content {
@@ -376,16 +410,20 @@ export default {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* 导航菜单 */
+/* 导航菜单 - 与Logo区域无缝连接 */
 .nav-menu {
   flex: 1;
-  padding: 16px 0;
+  padding: 0 !important; /* 移除内边距，实现无缝连接 */
   overflow-y: auto;
+  margin: 0;
+  background: linear-gradient(180deg, #0c1c30 0%, #1a2b3c 100%);
 }
 
 .blockchain-menu {
   border: none;
   background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .blockchain-menu .menu-item {
@@ -408,28 +446,39 @@ export default {
   box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
 }
 
-.menu-icon {
-  font-size: 18px;
-  color: #1890ff;
-  margin-right: 12px;
+/* 修复：第一个一级菜单与Logo区域无缝连接 */
+.el-submenu:first-child .el-submenu__title,
+.blockchain-menu .menu-item:first-child {
+  margin-top: 0 !important; /* 移除第一个菜单项的上边距 */
 }
 
-.menu-text {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* 子菜单 */
 .el-submenu__title {
   height: 48px !important;
   line-height: 48px !important;
   margin: 4px 12px;
   border-radius: 8px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .el-submenu__title:hover {
   background: rgba(24, 144, 255, 0.1) !important;
+}
+
+/* 为第一个一级菜单添加顶部连接效果 */
+.el-submenu:first-child .el-submenu__title::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(24, 144, 255, 0.2) 20%, 
+    rgba(24, 144, 255, 0.1) 50%, 
+    rgba(24, 144, 255, 0.2) 80%, 
+    transparent 100%);
 }
 
 .el-submenu .el-menu {
@@ -455,6 +504,17 @@ export default {
   font-size: 14px;
   margin-right: 8px;
   color: rgba(255, 255, 255, 0.6);
+}
+
+.menu-icon {
+  font-size: 18px;
+  color: #1890ff;
+  margin-right: 12px;
+}
+
+.menu-text {
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* 收缩按钮 */

@@ -1,0 +1,14 @@
+{
+  "name": "raspi-watcher",
+  "version": "1.0.0",
+  "description": "树莓派图片自动上传监听服务",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0"
+  }
+}

@@ -23,6 +23,7 @@ const routes = [
         name: 'Home',
         component: Home,
         children: [
+            { path: '/data-annotation', name: 'Data-annotation.vue', meta: { name: '数据标注' }, component: () => import('../components/data-annotation.vue') },//新增数据标注路由
             { path: '/query', name: 'Query', meta: { name: '溯源查询' }, component: () => import('../components/query.vue') },//新增溯源查询路由
             { path: '/Double-stranded', name: 'Double-Stranded', meta: { name: '双链管理' }, component: () => import('../components/Double-stranded.vue') },  //新增加双链管理路由
             { path: '/daping', name: 'Daping', meta: { name: '数据大屏' }, component: () => import('../components/daping.vue') }, // 新增数据大屏路由
