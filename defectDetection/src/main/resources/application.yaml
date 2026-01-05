@@ -7,8 +7,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 50MB
-      max-request-size: 50MB
+      max-file-size: 500MB
+      max-request-size: 500MB
   main:
     banner-mode: off
   devtools:
@@ -44,18 +44,18 @@ ai:
   # 本地Ollama配置
   local:
     url: http://localhost:11434/v1/chat/completions
-    model: qwen2.5:7b  # 推荐模型: qwen2.5:7b, qwen2.5:14b, llama3.1:8b
+    model: quen2.5:7b  # 推荐模型: qwen2.5:7b, qwen2.5:14b, llama3.1:8b
   
   # 阿里云通义千问配置
   cloud:
     url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
     key: sk-931696cf528645f280b7c3aa5684b8e4
-    model: qwen-turbo  # 可选: qwen-turbo(快速), qwen-plus(平衡), qwen-max(高级)
+    model: quen-turbo  # 可选: qwen-turbo(快速), qwen-plus(平衡), qwen-max(高级)
 
 # 区块链配置
 blockchain:
   # 是否启用区块链功能
-  enabled: false
+  enabled: true  
   # FISCO BCOS节点配置(使用channel端口)
   peers: 192.168.1.104:20200  # 本地节点（与qkl项目一致）
   # 群组ID
@@ -72,3 +72,9 @@ blockchain:
     workshop2: "0xcd3775b2ccce8f5fb108c53597b22bf81d5058d1"  # 车间2合约（来自qkl）
     workshop3: "0x8ad7027e3277449c079ba03641165f76d2c1d3db"  # 车间3合约（来自qkl）
     workshop4: "0x94fa2750dbf6fa43f7ca24f0e667b3e167133226"  # 车间4合约（来自qkl）
+    
+    #raw-material: "0x179396f45e1cde809780a7b077c026fcb317548f"
+    #workshop1: "0xf11054f8bc2e4d78a0ded5aa0ead04debc9401f4"
+    #workshop2: "0xcd3775b2ccce8f5fb108c53597b22bf81d5058d1"
+    #workshop3: "0x8ad7027e3277449c079ba03641165f76d2c1d3db"
+    #workshop4: "0x94fa2750dbf6fa43f7ca24f0e667b3e167133226"

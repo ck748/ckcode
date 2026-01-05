@@ -59,6 +59,10 @@
               <i class="el-icon-edit-outline submenu-icon"></i>
               <span>查询分析</span>
             </el-menu-item>
+            <el-menu-item index="/charts" class="submenu-item">
+              <i class="el-icon-data-analysis submenu-icon"></i>
+              <span>检测报表</span>
+            </el-menu-item>
           </el-submenu>
 
 
@@ -86,7 +90,7 @@
             </el-menu-item>
           </el-submenu>
 
-          <!-- 溯源管理 -->
+          <!-- 溯源管理
           <el-submenu index="trace">
             <template slot="title">
               <i class="el-icon-document menu-icon"></i>
@@ -100,7 +104,7 @@
               <i class="el-icon-warning submenu-icon"></i>
               <span>预警信息</span>
             </el-menu-item>
-          </el-submenu>
+          </el-submenu>-->
 
 
           <!-- 系统管理 -->
@@ -244,7 +248,9 @@ export default {
       return this.$route.meta?.title || '首页'
     },
     userName() {
-      return this.user?.name || '管理员'
+      // 临时修复：将 ???1 替换为 admin
+      const name = this.user?.name || '管理员'
+      return name === '???1' ? 'admin' : name
     },
     userAvatar() {
       return this.user?.avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'

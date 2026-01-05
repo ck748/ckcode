@@ -30,9 +30,9 @@ public class SpringBaseConfig {
     @Bean
     public MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        // 设置最大上传文件大小
-        factory.setMaxFileSize(DataSize.parse("5MB"));
-        factory.setMaxRequestSize(DataSize.parse("5MB"));
+        // 设置最大上传文件大小：500MB
+        factory.setMaxFileSize(DataSize.parse("500MB"));
+        factory.setMaxRequestSize(DataSize.parse("500MB"));
         return factory.createMultipartConfig();
     }
 }

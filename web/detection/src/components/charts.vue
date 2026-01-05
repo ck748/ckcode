@@ -80,7 +80,7 @@
               <th>半轴编码</th>
               <th>缺陷类型</th>
               <th>问题描述</th>
-              <th>严重程度</th>
+              <!-- 已删除严重程度列 -->
               <th>状态</th>
               <th>操作</th>
             </tr>
@@ -99,11 +99,7 @@
                 </span>
               </td>
               <td class="description-cell">{{ defect.description }}</td>
-              <td>
-                <span class="severity-badge" :class="defect.severity">
-                  {{ defect.severity }}
-                </span>
-              </td>
+              <!-- 已删除严重程度列单元格 -->
               <td>
                 <span class="status-badge" :class="defect.status">
                   {{ defect.status }}
@@ -123,11 +119,17 @@
     <!-- 区块链溯源详情对话框 -->
     <el-dialog
       :visible.sync="detailDialogVisible"
-      :title="`问题详情 - ${selectedDefect?.productSN || ''}`"
+      :title="`详情信息 - ${selectedDefect?.productSN || ''}`"
       width="800px"
       class="blockchain-dialog"
     >
       <div v-if="selectedDefect" class="blockchain-detail">
+        
+        <!-- 【新增】顶部横幅图片 -->
+        <div class="detail-banner">
+          <img src="./1.jpg" alt="检测详情图" class="detail-top-image" />
+        </div>
+
         <!-- 区块链信息头部 -->
         <div class="blockchain-header">
           <div class="blockchain-info">
@@ -154,9 +156,9 @@
           </div>
         </div>
 
-        <!-- 问题基本信息 -->
+        <!-- 基本信息 -->
         <div class="detail-section">
-          <h3><i class="el-icon-info"></i> 问题基本信息</h3>
+          <h3><i class="el-icon-info"></i> 基本信息</h3>
           <div class="info-grid">
             <div class="info-item">
               <span class="label">产品SN码：</span>
@@ -185,18 +187,18 @@
           </div>
         </div>
 
-        <!-- 缺陷详情 -->
+        <!-- 检测详情 -->
         <div class="detail-section">
-          <h3><i class="el-icon-warning"></i> 缺陷详情</h3>
+          <h3><i class="el-icon-warning"></i> 检测详情</h3>
           <div class="defect-details">
             <div class="detail-row">
-              <span class="label">缺陷类型：</span>
+              <span class="label">检测类型：</span>
               <span class="value type-tag" :style="{ backgroundColor: getDefectColor(selectedDefect.type) }">
                 {{ selectedDefect.type }}
               </span>
             </div>
             <div class="detail-row">
-              <span class="label">问题描述：</span>
+              <span class="label">检测描述：</span>
               <span class="value">{{ selectedDefect.description }}</span>
             </div>
             <div class="detail-row">
@@ -264,6 +266,7 @@
 <script>
 // 定义常量配置
 const DEFECT_COLORS = {
+  '正常': '#27ae60', // 正常颜色
   '内部缺陷': '#e74c3c',
   '钻孔偏心': '#f39c12',
   '表面粗糙': '#3498db',
@@ -287,7 +290,8 @@ const SEVERITY_CLASSES = {
 const STATUS_MAP = {
   'pending': '待处理',
   'processing': '处理中',
-  'resolved': '已解决'
+  'resolved': '已解决',
+  'normal': '正常'
 };
 
 const SEVERITY_MAP = {
@@ -308,9 +312,8 @@ const generateAxleCode = () => {
 // 生成时间范围在01/15到01/22之间
 const generateTime = (index) => {
   const baseDate = new Date('2024-01-15');
-  // 在7天范围内随机分布，避免集中在一天
-  const dayOffset = Math.floor(index / 2) % 7; // 每两个记录增加一天
-  const hour = 8 + Math.floor((index % 4) * 4); // 8, 12, 16, 20点
+  const dayOffset = Math.floor(index / 2) % 7; 
+  const hour = 8 + Math.floor((index % 4) * 4);
   const minute = Math.floor(Math.random() * 60);
   
   const date = new Date(baseDate);
@@ -327,7 +330,7 @@ export default {
       // 当前时间
       currentTime: '',
       
-      // 整体状态 - 修改为"正常"
+      // 整体状态
       overallStatus: '正常',
       
       // 车间选择
@@ -357,17 +360,74 @@ export default {
       // 缺陷数据统计
       defectData: {
         totalDefects: 10,
-        processingCount: 3,
-        resolvedCount: 2,
-        pendingCount: 5
+        processingCount: 0,
+        resolvedCount: 0,
+        pendingCount: 0
       },
       
-      // 所有车间的问题数据 - 时间分布在01/15到01/22之间，半轴编码格式为SN-数字数字-数字数字
+      // 所有车间的问题数据 (7条正常，3条缺陷，均匀分布)
       allDefects: [
-        // 三车间数据
+        // 1. 正常 - 三车间
         {
-          id: 'D20240115001',
-          detectionTime: generateTime(0), // 01/15 08:XX
+          id: 'N20240115001',
+          detectionTime: generateTime(0),
+          workshop: 'workshop3',
+          process: generateAxleCode(),
+          type: '正常',
+          description: '检测各项指标合格',
+          severity: '',
+          status: '正常',
+          productSN: generateAxleCode(),
+          batchNo: '20251205-01',
+          inspector: '王五',
+          equipmentNo: 'UT-2024-001',
+          parameters: {
+            defectDepth: { label: '缺陷检测', value: '无', unit: '', standard: '无缺陷' },
+            hardness: { label: '硬度值', value: 'HRC61', unit: '', standard: 'HRC60-62' }
+          },
+          blockchainInfo: {
+            blockId: 'BLK-20240115-OK001',
+            transactionHash: '0x89ab45cdef1234567890fedcba0987654321',
+            timestamp: generateTime(0),
+            verified: true,
+            traceNodes: [
+              { title: '原材料入库', time: '2024-01-14 09:00:00', details: { '检验结果': '合格' }, blockHash: '0x123...' },
+              { title: '最终检测', time: generateTime(0), details: { '结果': '合格' }, blockHash: '0x345...' }
+            ]
+          },
+          operationRecords: [
+            { time: generateTime(0), action: '检测合格上链', operator: '系统自动', blockHash: '0x89ab...' }
+          ]
+        },
+        // 2. 正常 - 三车间
+        {
+          id: 'N20240115002',
+          detectionTime: generateTime(1),
+          workshop: 'workshop3',
+          process: generateAxleCode(),
+          type: '正常',
+          description: '检测各项指标合格',
+          severity: '',
+          status: '正常',
+          productSN: generateAxleCode(),
+          batchNo: '20251205-01',
+          inspector: '赵六',
+          equipmentNo: 'CNC-003',
+          parameters: {
+            dimension: { label: '关键尺寸', value: 'OK', unit: '', standard: '符合公差' }
+          },
+          blockchainInfo: {
+            blockId: 'BLK-20240115-OK002',
+            transactionHash: '0x99cc45cdef1234567890fedcba0987654321',
+            timestamp: generateTime(1),
+            verified: true
+          },
+          operationRecords: [{ time: generateTime(1), action: '检测合格上链', operator: '系统自动', blockHash: '0x99cc...' }]
+        },
+        // 3. 缺陷 - 三车间 (内部缺陷)
+        {
+          id: 'D20240115003',
+          detectionTime: generateTime(2),
           workshop: 'workshop3',
           process: generateAxleCode(),
           type: '内部缺陷',
@@ -386,260 +446,72 @@ export default {
           blockchainInfo: {
             blockId: 'BLK-20240115-UT001',
             transactionHash: '0x89ab45cdef1234567890fedcba0987654321',
-            timestamp: generateTime(0),
-            verified: true,
-            traceNodes: [
-              {
-                title: '原材料入库',
-                time: '2024-01-14 09:00:00',
-                details: {
-                  '批次号': '20251205-01',
-                  '材料类型': '合金钢',
-                  '供应商': '宝钢集团',
-                  '检验结果': '合格'
-                },
-                blockHash: '0x1234567890abcdef1234567890abcdef12345678'
-              },
-              {
-                title: '热处理工序',
-                time: '2024-01-15 10:30:00',
-                details: {
-                  '加热温度': '850℃',
-                  '保温时间': '60分钟',
-                  '冷却速度': '15℃/s',
-                  '操作人员': '张三'
-                },
-                blockHash: '0x234567890abcdef1234567890abcdef123456789'
-              },
-              {
-                title: '探伤检测',
-                time: generateTime(0),
-                details: {
-                  '检测设备': 'UT-2024-001',
-                  '检测人员': '王五',
-                  '缺陷类型': '内部裂纹',
-                  '缺陷深度': '2mm'
-                },
-                blockHash: '0x34567890abcdef1234567890abcdef1234567890'
-              }
-            ]
-          },
-          operationRecords: [
-            {
-              time: generateTime(0),
-              action: '问题检测记录上链',
-              operator: '系统自动',
-              blockHash: '0x89ab45cdef1234567890fedcba0987654321'
-            },
-            {
-              time: generateTime(0),
-              action: '质量主管确认',
-              operator: '李四',
-              blockHash: '0x98ba54dcfe2345678901edcba0987654321'
-            },
-            {
-              time: generateTime(0),
-              action: '开始处理',
-              operator: '维修组',
-              blockHash: '0xa7cb65edcf3456789012fedcba0987654321'
-            }
-          ]
-        },
-        {
-          id: 'D20240116002',
-          detectionTime: generateTime(1), // 01/15 12:XX
-          workshop: 'workshop3',
-          process: generateAxleCode(),
-          type: '钻孔偏心',
-          description: '钻孔位置偏移0.25mm，超出公差范围',
-          severity: '中等',
-          status: '待处理',
-          productSN: generateAxleCode(),
-          batchNo: '20251205-01',
-          inspector: '赵六',
-          equipmentNo: 'CNC-003',
-          parameters: {
-            holePosition: { label: '孔位偏差', value: 0.25, unit: 'mm', standard: '±0.1', warning: true },
-            holeDiameter: { label: '孔径', value: 15, unit: 'mm', standard: '15±0.02' },
-            equipment: { label: '设备参数', value: '转速800r/min' }
-          },
-          blockchainInfo: {
-            blockId: 'BLK-20240116-CNC002',
-            transactionHash: '0x56cd78efab3456789012fedcba0987654321',
-            timestamp: generateTime(1),
-            verified: false,
-            traceNodes: [
-              {
-                title: '钻孔工序',
-                time: '2024-01-16 15:20:00',
-                details: {
-                  '设备编号': 'CNC-003',
-                  '操作人员': '钱七',
-                  '加工参数': '转速800r/min，进给0.2mm/r',
-                  '加工时间': '15:20-15:25'
-                },
-                blockHash: '0x4567890abcdef1234567890abcdef12345678901'
-              }
-            ]
-          },
-          operationRecords: [
-            {
-              time: generateTime(1),
-              action: '问题检测记录上链',
-              operator: '系统自动',
-              blockHash: '0x56cd78efab3456789012fedcba0987654321'
-            }
-          ]
-        },
-        {
-          id: 'D20240117003',
-          detectionTime: generateTime(2), // 01/16 08:XX
-          workshop: 'workshop3',
-          process: generateAxleCode(),
-          type: '表面粗糙',
-          description: '校直力过大导致表面微裂纹',
-          severity: '中等',
-          status: '已解决',
-          productSN: generateAxleCode(),
-          batchNo: '20251205-01',
-          inspector: '孙八',
-          equipmentNo: 'STR-002',
-          parameters: {
-            straighteningForce: { label: '校直力', value: 85, unit: 'kN', standard: '80±3', warning: true },
-            surfaceCondition: { label: '表面状况', value: '微裂纹' },
-            processingTemp: { label: '处理温度', value: 180, unit: '℃' }
-          },
-          blockchainInfo: {
-            blockId: 'BLK-20240117-STR001',
-            transactionHash: '0x67de89fabc4567890123fedcba0987654321',
             timestamp: generateTime(2),
             verified: true,
             traceNodes: [
-              {
-                title: '校直工序',
-                time: '2024-01-17 11:00:00',
-                details: {
-                  '校直设备': 'STR-002',
-                  '操作人员': '孙八',
-                  '校直参数': '校直力85kN，时间30s',
-                  '温度控制': '180℃'
-                },
-                blockHash: '0x567890abcdef1234567890abcdef123456789012'
-              },
-              {
-                title: '质量检验',
-                time: generateTime(2),
-                details: {
-                  '检验方法': '目视检查',
-                  '检验结果': '表面微裂纹',
-                  '处理建议': '调整校直参数'
-                },
-                blockHash: '0x678901abcdef1234567890abcdef1234567890123'
-              }
+              { title: '热处理工序', time: '2024-01-15 10:30:00', details: { '加热温度': '850℃' }, blockHash: '0x234...' },
+              { title: '探伤检测', time: generateTime(2), details: { '缺陷类型': '内部裂纹' }, blockHash: '0x345...' }
             ]
           },
           operationRecords: [
-            {
-              time: generateTime(2),
-              action: '问题检测记录上链',
-              operator: '系统自动',
-              blockHash: '0x67de89fabc4567890123fedcba0987654321'
-            },
-            {
-              time: generateTime(2),
-              action: '参数调整处理',
-              operator: '工艺组',
-              blockHash: '0x789012bcdef1234567890abcdef12345678901234'
-            },
-            {
-              time: generateTime(2),
-              action: '复检合格',
-              operator: '孙八',
-              blockHash: '0x890123cdef1234567890abcdef123456789012345'
-            }
+            { time: generateTime(2), action: '问题检测记录上链', operator: '系统自动', blockHash: '0x89ab...' },
+            { time: generateTime(2), action: '开始处理', operator: '维修组', blockHash: '0xa7cb...' }
           ]
         },
+        // 4. 正常 - 一车间
         {
-          id: 'D20240118004',
-          detectionTime: generateTime(3), // 01/16 12:XX
-          workshop: 'workshop3',
-          process: generateAxleCode(),
-          type: '内部缺陷',
-          description: '硬度值偏低，HRC58，不符合要求',
-          severity: '轻微',
-          status: '处理中',
-          productSN: generateAxleCode(),
-          batchNo: '20251205-01',
-          inspector: '吴九',
-          equipmentNo: 'HT-001',
-          parameters: {
-            hardness: { label: '硬度值', value: 'HRC58', standard: 'HRC60-62', warning: true },
-            quenchingTemp: { label: '淬火温度', value: 920, unit: '℃', standard: '920±10' },
-            coolingMedium: { label: '冷却介质', value: '水' }
-          },
-          blockchainInfo: {
-            blockId: 'BLK-20240118-HT001',
-            transactionHash: '0x78ef90abcd5678901234fedcba0987654321',
-            timestamp: generateTime(3),
-            verified: true,
-            traceNodes: [
-              {
-                title: '淬火工序',
-                time: '2024-01-18 10:30:00',
-                details: {
-                  '加热温度': '920℃',
-                  '保温时间': '15分钟',
-                  '冷却介质': '水',
-                  '操作人员': '吴九'
-                },
-                blockHash: '0x78901234abcdef1234567890abcdef123456789'
-              }
-            ]
-          },
-          operationRecords: [
-            {
-              time: generateTime(3),
-              action: '问题检测记录上链',
-              operator: '系统自动',
-              blockHash: '0x78ef90abcd5678901234fedcba0987654321'
-            },
-            {
-              time: generateTime(3),
-              action: '重新调整工艺',
-              operator: '热处理组',
-              blockHash: '0x89f001bcde6789012345fedcba0987654321'
-            }
-          ]
-        },
-        
-        // 一车间数据
-        {
-          id: 'D20240119005',
-          detectionTime: generateTime(4), // 01/17 08:XX
+          id: 'N20240116004',
+          detectionTime: generateTime(3),
           workshop: 'workshop1',
           process: generateAxleCode(),
-          type: '内部缺陷',
-          description: '锻造温度异常导致内部微裂纹',
-          severity: '中等',
-          status: '处理中',
+          type: '正常',
+          description: '锻造尺寸与外观符合标准',
+          severity: '',
+          status: '正常',
           productSN: generateAxleCode(),
           batchNo: '20251205-01',
           inspector: '张工',
           equipmentNo: 'FORGE-001',
           parameters: {
-            forgingTemp: { label: '锻造温度', value: 1150, unit: '℃', standard: '1100±20', warning: true },
-            defectSize: { label: '缺陷尺寸', value: '1.5×0.8', unit: 'mm' }
+            temp: { label: '终锻温度', value: 850, unit: '℃', standard: '800-900' }
           },
           blockchainInfo: {
-            blockId: 'BLK-20240119-FRG001',
-            transactionHash: '0x89ab45cdef1234567890fedcba0987654321',
+            blockId: 'BLK-20240116-OK003',
+            transactionHash: '0xaaab45cdef1234567890fedcba0987654321',
+            timestamp: generateTime(3),
+            verified: true
+          },
+          operationRecords: [{ time: generateTime(3), action: '检测合格上链', operator: '系统自动', blockHash: '0xaaab...' }]
+        },
+        // 5. 正常 - 一车间
+        {
+          id: 'N20240116005',
+          detectionTime: generateTime(4),
+          workshop: 'workshop1',
+          process: generateAxleCode(),
+          type: '正常',
+          description: '机加工尺寸精度合格',
+          severity: '',
+          status: '正常',
+          productSN: generateAxleCode(),
+          batchNo: '20251205-01',
+          inspector: '李工',
+          equipmentNo: 'LATHE-002',
+          parameters: {
+            diameter: { label: '直径', value: 50.05, unit: 'mm', standard: '50±0.1' }
+          },
+          blockchainInfo: {
+            blockId: 'BLK-20240116-OK004',
+            transactionHash: '0xbbbc45cdef1234567890fedcba0987654321',
             timestamp: generateTime(4),
             verified: true
-          }
+          },
+          operationRecords: [{ time: generateTime(4), action: '检测合格上链', operator: '系统自动', blockHash: '0xbbbc...' }]
         },
+        // 6. 缺陷 - 一车间 (尺寸偏差)
         {
-          id: 'D20240120006',
-          detectionTime: generateTime(5), // 01/17 12:XX
+          id: 'D20240117006',
+          detectionTime: generateTime(5),
           workshop: 'workshop1',
           process: generateAxleCode(),
           type: '尺寸偏差',
@@ -659,69 +531,72 @@ export default {
             transactionHash: '0x98ba54dcfe2345678901edcba0987654321',
             timestamp: generateTime(5),
             verified: true
-          }
+          },
+          operationRecords: [
+            { time: generateTime(5), action: '问题检测记录上链', operator: '系统自动', blockHash: '0x98ba...' },
+            { time: generateTime(5), action: '返修完成', operator: '李工', blockHash: '0x76cd...' }
+          ]
         },
-        
-        // 二车间数据
+        // 7. 正常 - 二车间
         {
-          id: 'D20240121007',
-          detectionTime: generateTime(6), // 01/18 08:XX
+          id: 'N20240118007',
+          detectionTime: generateTime(6),
           workshop: 'workshop2',
           process: generateAxleCode(),
-          type: '内部缺陷',
-          description: '硬度不均匀，HRC值波动大',
-          severity: '中等',
-          status: '待处理',
+          type: '正常',
+          description: '热处理硬度合格',
+          severity: '',
+          status: '正常',
           productSN: generateAxleCode(),
           batchNo: '20251205-02',
           inspector: '王工',
           equipmentNo: 'HEAT-001',
           parameters: {
-            hardnessMin: { label: '最低硬度', value: 'HRC58', unit: '', standard: 'HRC60-62', warning: true },
-            hardnessMax: { label: '最高硬度', value: 'HRC65', unit: '', standard: 'HRC60-62', warning: true }
+            hardness: { label: '硬度', value: 'HRC60', unit: '', standard: 'HRC60-62' }
           },
           blockchainInfo: {
-            blockId: 'BLK-20240121-HTM001',
-            transactionHash: '0x56cd78efab3456789012fedcba0987654321',
+            blockId: 'BLK-20240118-OK005',
+            transactionHash: '0xcccb45cdef1234567890fedcba0987654321',
             timestamp: generateTime(6),
-            verified: false
-          }
+            verified: true
+          },
+          operationRecords: [{ time: generateTime(6), action: '检测合格上链', operator: '系统自动', blockHash: '0xcccb...' }]
         },
+        // 8. 正常 - 二车间
         {
-          id: 'D20240121008',
-          detectionTime: generateTime(7), // 01/18 12:XX
+          id: 'N20240118008',
+          detectionTime: generateTime(7),
           workshop: 'workshop2',
           process: generateAxleCode(),
-          type: '表面问题',
-          description: '表面粗糙度Ra值超标',
-          severity: '轻微',
-          status: '处理中',
+          type: '正常',
+          description: '表面光洁度符合要求',
+          severity: '',
+          status: '正常',
           productSN: generateAxleCode(),
           batchNo: '20251205-02',
           inspector: '赵工',
           equipmentNo: 'LATHE-005',
           parameters: {
-            roughness: { label: '粗糙度Ra', value: 1.8, unit: 'μm', standard: '≤1.6', warning: true },
-            surface: { label: '表面状况', value: '有振纹' }
+            roughness: { label: 'Ra值', value: 1.2, unit: 'μm', standard: '≤1.6' }
           },
           blockchainInfo: {
-            blockId: 'BLK-20240121-LTH005',
-            transactionHash: '0x67de89fabc4567890123fedcba0987654321',
+            blockId: 'BLK-20240118-OK006',
+            transactionHash: '0xddde45cdef1234567890fedcba0987654321',
             timestamp: generateTime(7),
             verified: true
-          }
+          },
+          operationRecords: [{ time: generateTime(7), action: '检测合格上链', operator: '系统自动', blockHash: '0xddde...' }]
         },
-        
-        // 四车间数据
+        // 9. 缺陷 - 四车间 (装配问题)
         {
-          id: 'D20240122009',
-          detectionTime: generateTime(8), // 01/19 08:XX
+          id: 'D20240119009',
+          detectionTime: generateTime(8),
           workshop: 'workshop4',
           process: generateAxleCode(),
           type: '装配问题',
           description: '轴承配合间隙过大',
           severity: '中等',
-          status: '处理中',
+          status: '待处理',
           productSN: generateAxleCode(),
           batchNo: '20251205-04',
           inspector: '周工',
@@ -734,32 +609,39 @@ export default {
             blockId: 'BLK-20240122-ASM001',
             transactionHash: '0x78ef90abcd5678901234fedcba0987654321',
             timestamp: generateTime(8),
-            verified: true
-          }
+            verified: true,
+            traceNodes: [
+               { title: '装配工序', time: generateTime(8), details: { '异常': '间隙过大' }, blockHash: '0x78ef...' }
+            ]
+          },
+          operationRecords: [
+            { time: generateTime(8), action: '问题检测记录上链', operator: '系统自动', blockHash: '0x78ef...' }
+          ]
         },
+        // 10. 正常 - 四车间
         {
-          id: 'D20240122010',
-          detectionTime: generateTime(9), // 01/19 12:XX
+          id: 'N20240119010',
+          detectionTime: generateTime(9),
           workshop: 'workshop4',
           process: generateAxleCode(),
-          type: '尺寸偏差',
-          description: '总长度超差-0.3mm',
-          severity: '轻微',
-          status: '已解决',
+          type: '正常',
+          description: '总成检测合格，无异常',
+          severity: '',
+          status: '正常',
           productSN: generateAxleCode(),
           batchNo: '20251205-04',
           inspector: '吴工',
           equipmentNo: 'MEAS-002',
           parameters: {
-            totalLength: { label: '总长度', value: 499.7, unit: 'mm', standard: '500±0.2', warning: true },
-            tolerance: { label: '允许公差', value: '±0.2mm' }
+            finalCheck: { label: '终检', value: 'PASS', unit: '', standard: 'PASS' }
           },
           blockchainInfo: {
-            blockId: 'BLK-20240122-MEA002',
-            transactionHash: '0x89f001bcde6789012345fedcba0987654321',
+            blockId: 'BLK-20240119-OK007',
+            transactionHash: '0xeeef45cdef1234567890fedcba0987654321',
             timestamp: generateTime(9),
             verified: true
-          }
+          },
+          operationRecords: [{ time: generateTime(9), action: '检测合格上链', operator: '系统自动', blockHash: '0xeeef...' }]
         }
       ],
       
@@ -788,7 +670,8 @@ export default {
       // 按状态筛选
       if (this.filterStatus !== 'all') {
         filtered = filtered.filter(defect => {
-          return defect.status === STATUS_MAP[this.filterStatus];
+          return defect.status === STATUS_MAP[this.filterStatus] || 
+                 (this.filterStatus === 'all' && defect.status === '正常'); 
         });
       }
       
@@ -848,15 +731,8 @@ export default {
         pendingCount
       };
       
-      // 更新整体状态 - 修改逻辑使状态显示为"正常"
-      if (totalDefects === 0) {
-        this.overallStatus = '正常';
-      } else if (pendingCount > 0 || processingCount > 0) {
-        // 即使有问题，也显示为"正常"（根据要求）
-        this.overallStatus = '正常';
-      } else {
-        this.overallStatus = '正常';
-      }
+      // 更新整体状态
+      this.overallStatus = '正常';
     },
     
     // 更新当前时间
@@ -895,7 +771,7 @@ export default {
       });
     },
     
-    // 获取状态样式类 - "正常"状态对应绿色
+    // 获取状态样式类
     getStatusClass(status) {
       return STATUS_CLASSES[status] || 'success';
     },
@@ -1202,6 +1078,11 @@ export default {
   color: #27ae60;
 }
 
+.status-badge.正常 {
+  background: #e8f5e8;
+  color: #27ae60;
+}
+
 /* 按钮样式 */
 .detail-btn {
   padding: 6px 16px;
@@ -1249,6 +1130,21 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+/* 详情顶部图片样式 */
+.detail-banner {
+  width: 100%;
+  margin-bottom: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.detail-top-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
 }
 
 /* 区块链头部 */

@@ -26,6 +26,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
@@ -51,6 +53,82 @@ public class AnnotationController {
 
     @Autowired
     private AnnotationDataService annotationDataService;
+
+    /**
+     * 图片上传并计算SHA-256哈希值
+     */
+    @PostMapping("/upload/hash")
+    public Result uploadImageAndCalculateHash(@RequestParam("image") MultipartFile image) {
+        try {
+            // 检查文件
+            if (image.isEmpty()) {
+                return Result.fail("上传文件为空");
+            }
+
+            // 计算SHA-256哈希值
+            String sha256Hash = com.ggbond.defectdetection.util.FileSha256Util.calculateStreamSHA256(image.getInputStream());
+            
+            if (sha256Hash == null) {
+                return Result.fail("计算哈希值失败");
+            }
+
+            // 构建返回数据
+            Map<String, Object> resultData = new HashMap<>();
+            resultData.put("fileName", image.getOriginalFilename());
+            resultData.put("fileSize", image.getSize());
+            resultData.put("sha256", sha256Hash);
+            resultData.put("uploadTime", LocalDateTime.now());
+
+            log.info("📷 图片上传成功并计算SHA-256: 文件名={}, 大小={}KB, 哈希={}", 
+                image.getOriginalFilename(), image.getSize() / 1024, sha256Hash);
+
+            return Result.success("图片上传并计算哈希成功", resultData);
+        } catch (Exception e) {
+            log.error("图片上传或计算哈希失败: {}", e.getMessage(), e);
+            return Result.fail("图片上传或计算哈希失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 视频上传并计算SHA-256哈希值
+     */
+    @PostMapping("/upload/video/hash")
+    public Result uploadVideoAndCalculateHash(@RequestParam("video") MultipartFile video) {
+        log.info("🎬 收到视频上传请求: 文件名={}, 大小={}MB", 
+            video.getOriginalFilename(), video.getSize() / (1024.0 * 1024.0));
+        
+        try {
+            // 检查文件
+            if (video.isEmpty()) {
+                log.warn("⚠️ 上传文件为空");
+                return Result.fail("上传文件为空");
+            }
+
+            log.info("🔢 开始计算SHA-256哈希值...");
+            // 计算SHA-256哈希值
+            String sha256Hash = com.ggbond.defectdetection.util.FileSha256Util.calculateStreamSHA256(video.getInputStream());
+            
+            if (sha256Hash == null) {
+                log.error("❌ 计算哈希值失败");
+                return Result.fail("计算哈希值失败");
+            }
+
+            // 构建返回数据
+            Map<String, Object> resultData = new HashMap<>();
+            resultData.put("fileName", video.getOriginalFilename());
+            resultData.put("fileSize", video.getSize());
+            resultData.put("sha256", sha256Hash);
+            resultData.put("uploadTime", LocalDateTime.now());
+
+            log.info("✅ 视频哈希计算成功: 文件名={}, 大小={:.2f}MB, 哈希={}", 
+                video.getOriginalFilename(), video.getSize() / (1024.0 * 1024.0), sha256Hash);
+
+            return Result.success("视频上传并计算哈希成功", resultData);
+        } catch (Exception e) {
+            log.error("❌ 视频上传或计算哈希失败: {}", e.getMessage(), e);
+            return Result.fail("视频上传或计算哈希失败: " + e.getMessage());
+        }
+    }
 
     /**
      * 数据标注上传接口

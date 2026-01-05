@@ -77,7 +77,7 @@ CREATE TABLE `api`  (
 -- ----------------------------
 -- Records of api
 -- ----------------------------
-INSERT INTO `api` VALUES (1, 0, '2025-11-22 19:12:50', 1, '???1', '2025-11-22 19:12:50', 1, -1, -1, 0, 'APIKEY1', 1, NULL, 0);
+INSERT INTO `api` VALUES (1, 0, '2025-11-22 19:12:50', 1, 'admin', '2025-11-22 19:12:50', 1, -1, -1, 0, 'APIKEY1', 1, NULL, 0);
 INSERT INTO `api` VALUES (2, 0, '2025-11-22 19:12:50', 2, '???2', '2025-11-22 19:12:50', 2, -1, -1, 0, 'APIKEY2', 1, NULL, 0);
 
 -- ----------------------------
@@ -141,7 +141,7 @@ CREATE TABLE `detect_log`  (
 -- ----------------------------
 -- Records of detect_log
 -- ----------------------------
-INSERT INTO `detect_log` VALUES (1, '???1', 2, '2025-11-22 19:12:50', 1, '/path/to/storage1', 'detection', NULL);
+INSERT INTO `detect_log` VALUES (1, 'admin', 2, '2025-11-22 19:12:50', 1, '/path/to/storage1', 'detection', NULL);
 INSERT INTO `detect_log` VALUES (2, '???2', 1, '2025-11-22 19:12:50', 2, '/path/to/storage2', 'detection', NULL);
 
 -- ----------------------------
@@ -193,7 +193,7 @@ CREATE TABLE `manager`  (
 -- ----------------------------
 -- Records of manager
 -- ----------------------------
-INSERT INTO `manager` VALUES (1, 'admin1', 'e10adc3949ba59abbe56e057f20f883e', '12345678901', '???1', 'admin1@example.com', 0, 0, 0, 0, 0);
+INSERT INTO `manager` VALUES (1, 'admin1', 'e10adc3949ba59abbe56e057f20f883e', '12345678901', 'admin', 'admin1@example.com', 0, 0, 0, 0, 0);
 INSERT INTO `manager` VALUES (2, 'admin2', 'e10adc3949ba59abbe56e057f20f883e', '98765432109', '???2', 'admin2@example.com', 0, 0, 0, 0, 0);
 
 -- ----------------------------
@@ -244,7 +244,7 @@ CREATE TABLE `operator`  (
 -- ----------------------------
 -- Records of operator
 -- ----------------------------
-INSERT INTO `operator` VALUES (1, NULL, '123456', 'abcdef', 0, '2025-11-22 19:12:50', 1, '2025-11-22 19:12:50', 1, '???1', '???1', 1, '??1');
+INSERT INTO `operator` VALUES (1, NULL, '123456', 'abcdef', 0, '2025-11-22 19:12:50', 1, '2025-11-22 19:12:50', 1, 'admin', 'admin', 1, '??1');
 INSERT INTO `operator` VALUES (2, NULL, 'abcdef', '123456', 0, '2025-11-22 19:12:50', 2, '2025-11-22 19:12:50', 2, '???2', '???2', 2, '??2');
 
 -- ----------------------------

@@ -343,50 +343,10 @@
                 </div>
               </div>
               <el-row :gutter="20" class="section-content">
-                <el-col :span="8">
+                <el-col :span="24">
                   <div class="detail-item">
                     <div class="detail-label">供应商</div>
                     <div class="detail-value">{{ traceData.rawMaterial?.supplier || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">材料类型</div>
-                    <div class="detail-value">{{ traceData.rawMaterial?.materialType || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">产地</div>
-                    <div class="detail-value">{{ traceData.rawMaterial?.origin || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">采购日期</div>
-                    <div class="detail-value">{{ traceData.rawMaterial?.purchaseDate || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">检验报告</div>
-                    <div class="detail-value">
-                      <el-button
-                        v-if="traceData.rawMaterial?.reportUrl"
-                        type="text"
-                        @click="viewReport(traceData.rawMaterial.reportUrl)"
-                        size="small"
-                      >
-                        查看报告
-                      </el-button>
-                      <span v-else>--</span>
-                    </div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">批次编号</div>
-                    <div class="detail-value">{{ traceData.rawMaterial?.batchNo || '--' }}</div>
                   </div>
                 </el-col>
               </el-row>
@@ -417,82 +377,23 @@
                 </div>
               </div>
               <el-row :gutter="20" class="section-content">
-                <el-col :span="8">
+                <!-- 区块链数据：只保留车间真实上链的字段 -->
+                <el-col :span="24" v-if="!traceData.workshop1 || Object.keys(traceData.workshop1).length === 0">
                   <div class="detail-item">
-                    <div class="detail-label">加工日期</div>
-                    <div class="detail-value">{{ traceData.workshop1?.processDate || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">操作员</div>
-                    <div class="detail-value">{{ traceData.workshop1?.operator || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">设备编号</div>
-                    <div class="detail-value">{{ traceData.workshop1?.equipmentNo || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="12">
-                  <div class="detail-item">
-                    <div class="detail-label">加工参数</div>
-                    <div class="detail-value">
-                      <span v-if="traceData.workshop1?.parameters">
-                        温度：{{ traceData.workshop1.parameters.temperature || '--' }}℃，
-                        压力：{{ traceData.workshop1.parameters.pressure || '--' }}MPa
-                      </span>
-                      <span v-else>--</span>
+                    <div class="detail-value" style="color: #909399; text-align: center; padding: 20px;">
+                      暂无数据
                     </div>
                   </div>
                 </el-col>
-                <el-col :span="12">
-                  <div class="detail-item">
-                    <div class="detail-label">质检员</div>
-                    <div class="detail-value">
-                      <span v-if="traceData.workshop1?.qualityCheck?.inspector">
-                        {{ traceData.workshop1.qualityCheck.inspector }}
-                      </span>
-                      <span v-else>--</span>
+                <!-- 只展示从区块链获取的数据 -->
+                <template v-else>
+                  <el-col :span="8" v-for="(value, key) in traceData.workshop1" :key="key">
+                    <div class="detail-item">
+                      <div class="detail-label">{{ formatFieldName(key) }}</div>
+                      <div class="detail-value">{{ formatFieldValue(value) }}</div>
                     </div>
-                  </div>
-                </el-col>
-                <!-- 切割下料工序 -->
-                <el-col :span="24" v-if="traceData.workshop1?.cutting">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #409EFF;">① 切割下料</div>
-                    <div class="detail-value">
-                      <span>材料批次：{{ traceData.workshop1.cutting.materialBatch }} | </span>
-                      <span>切割尺寸：{{ traceData.workshop1.cutting.cutSize }} | </span>
-                      <span>切割速度：{{ traceData.workshop1.cutting.cutSpeed }} | </span>
-                      <span>操作员：{{ traceData.workshop1.cutting.operator }}</span>
-                    </div>
-                  </div>
-                </el-col>
-                <!-- 压花键工序 -->
-                <el-col :span="24" v-if="traceData.workshop1?.pressing">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #409EFF;">② 压花键</div>
-                    <div class="detail-value">
-                      <span>压力：{{ traceData.workshop1.pressing.pressure }} | </span>
-                      <span>花键尺寸：{{ traceData.workshop1.pressing.splineSize }} | </span>
-                      <span>设备编号：{{ traceData.workshop1.pressing.equipmentNo }}</span>
-                    </div>
-                  </div>
-                </el-col>
-                <!-- 锻造工序 -->
-                <el-col :span="24" v-if="traceData.workshop1?.forging">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #409EFF;">③ 锻造</div>
-                    <div class="detail-value">
-                      <span>锻造温度：{{ traceData.workshop1.forging.forgingTemp }} | </span>
-                      <span>压力：{{ traceData.workshop1.forging.pressure }} | </span>
-                      <span>保压时间：{{ traceData.workshop1.forging.holdTime }} | </span>
-                      <span>缺陷：<el-tag :type="traceData.workshop1.forging.defect === '无' ? 'success' : 'danger'" size="mini">{{ traceData.workshop1.forging.defect }}</el-tag></span>
-                    </div>
-                  </div>
-                </el-col>
+                  </el-col>
+                </template>
               </el-row>
             </div>
 
@@ -517,92 +418,22 @@
                 </div>
               </div>
               <el-row :gutter="20" class="section-content">
-                <el-col :span="8">
+                <!-- 区块链数据：只保留车间真实上链的字段 -->
+                <el-col :span="24" v-if="!traceData.workshop2 || Object.keys(traceData.workshop2).length === 0">
                   <div class="detail-item">
-                    <div class="detail-label">热处理日期</div>
-                    <div class="detail-value">{{ traceData.workshop2?.processDate || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">工艺类型</div>
-                    <div class="detail-value">{{ traceData.workshop2?.processType || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">操作员</div>
-                    <div class="detail-value">{{ traceData.workshop2?.operator || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="12">
-                  <div class="detail-item">
-                    <div class="detail-label">温度曲线</div>
-                    <div class="detail-value">
-                      <span v-if="traceData.workshop2?.temperatureCurve">
-                        升温：{{ traceData.workshop2.temperatureCurve.heating || '--' }}℃，
-                        保温：{{ traceData.workshop2.temperatureCurve.holding || '--' }}℃
-                      </span>
-                      <span v-else>--</span>
+                    <div class="detail-value" style="color: #909399; text-align: center; padding: 20px;">
+                      暂无数据
                     </div>
                   </div>
                 </el-col>
-                <el-col :span="12">
-                  <div class="detail-item">
-                    <div class="detail-label">硬度标准</div>
-                    <div class="detail-value">
-                      <span v-if="traceData.workshop2?.hardnessTest?.standard">
-                        {{ traceData.workshop2.hardnessTest.standard || '--' }}
-                      </span>
-                      <span v-else>--</span>
+                <template v-else>
+                  <el-col :span="8" v-for="(value, key) in traceData.workshop2" :key="key">
+                    <div class="detail-item">
+                      <div class="detail-label">{{ formatFieldName(key) }}</div>
+                      <div class="detail-value">{{ formatFieldValue(value) }}</div>
                     </div>
-                  </div>
-                </el-col>
-                <!-- 钻中心孔工序 -->
-                <el-col :span="24" v-if="traceData.workshop2?.drilling">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #67C23A;">① 钻中心孔</div>
-                    <div class="detail-value">
-                      <span>孔尺寸：{{ traceData.workshop2.drilling.holeSize }} | </span>
-                      <span>孔深：{{ traceData.workshop2.drilling.holeDepth }} | </span>
-                      <span>设备转速：{{ traceData.workshop2.drilling.equipmentSpeed }}</span>
-                    </div>
-                  </div>
-                </el-col>
-                <!-- 调质热处理工序 -->
-                <el-col :span="24" v-if="traceData.workshop2?.heatTreatment">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #67C23A;">② 调质热处理</div>
-                    <div class="detail-value">
-                      <span>加热温度：{{ traceData.workshop2.heatTreatment.heatingTemp }} | </span>
-                      <span>保温时间：{{ traceData.workshop2.heatTreatment.holdTime }} | </span>
-                      <span>冷却速率：{{ traceData.workshop2.heatTreatment.coolingRate }}</span>
-                    </div>
-                  </div>
-                </el-col>
-                <!-- 粗车盘工序 -->
-                <el-col :span="24" v-if="traceData.workshop2?.turning">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #67C23A;">③ 粗车盘</div>
-                    <div class="detail-value">
-                      <span>转速：{{ traceData.workshop2.turning.rotationSpeed }} | </span>
-                      <span>进给速度：{{ traceData.workshop2.turning.feedRate }} | </span>
-                      <span>公差：{{ traceData.workshop2.turning.tolerance }} | </span>
-                      <span>刀具型号：{{ traceData.workshop2.turning.toolType }}</span>
-                    </div>
-                  </div>
-                </el-col>
-                <!-- 加工齿工序 -->
-                <el-col :span="24" v-if="traceData.workshop2?.gear">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #67C23A;">④ 加工齿</div>
-                    <div class="detail-value">
-                      <span>齿轮精度：{{ traceData.workshop2.gear.gearAccuracy }} | </span>
-                      <span>表面硬度：{{ traceData.workshop2.gear.surfaceHardness }} | </span>
-                      <span>设备编号：{{ traceData.workshop2.gear.equipmentNo }}</span>
-                    </div>
-                  </div>
-                </el-col>
+                  </el-col>
+                </template>
               </el-row>
             </div>
 
@@ -631,91 +462,22 @@
                 </div>
               </div>
               <el-row :gutter="20" class="section-content">
-                <el-col :span="8">
+                <!-- 区块链数据：只保留车间真实上链的字段 -->
+                <el-col :span="24" v-if="!traceData.workshop3 || Object.keys(traceData.workshop3).length === 0">
                   <div class="detail-item">
-                    <div class="detail-label">加工日期</div>
-                    <div class="detail-value">{{ traceData.workshop3?.processDate || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">机床编号</div>
-                    <div class="detail-value">{{ traceData.workshop3?.machineNo || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">操作员</div>
-                    <div class="detail-value">{{ traceData.workshop3?.operator || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="12">
-                  <div class="detail-item">
-                    <div class="detail-label">加工尺寸</div>
-                    <div class="detail-value">
-                      <span v-if="traceData.workshop3?.dimensions">
-                        长度：{{ traceData.workshop3.dimensions.length || '--' }}mm，
-                        直径：{{ traceData.workshop3.dimensions.diameter || '--' }}mm
-                      </span>
-                      <span v-else>--</span>
+                    <div class="detail-value" style="color: #909399; text-align: center; padding: 20px;">
+                      暂无数据
                     </div>
                   </div>
                 </el-col>
-                <el-col :span="12">
-                  <div class="detail-item">
-                    <div class="detail-label">公差标准</div>
-                    <div class="detail-value">
-                      <span v-if="traceData.workshop3?.precisionCheck?.tolerance">
-                        {{ traceData.workshop3.precisionCheck.tolerance }}
-                      </span>
-                      <span v-else>--</span>
+                <template v-else>
+                  <el-col :span="8" v-for="(value, key) in traceData.workshop3" :key="key">
+                    <div class="detail-item">
+                      <div class="detail-label">{{ formatFieldName(key) }}</div>
+                      <div class="detail-value">{{ formatFieldValue(value) }}</div>
                     </div>
-                  </div>
-                </el-col>
-                <!-- 淬火工序 -->
-                <el-col :span="24" v-if="traceData.workshop3?.quenching">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #E6A23C;">① 淬火</div>
-                    <div class="detail-value">
-                      <span>淬火温度：{{ traceData.workshop3.quenching.quenchingTemp }} | </span>
-                      <span>冷却介质：{{ traceData.workshop3.quenching.coolingMedium }} | </span>
-                      <span>硬度：{{ traceData.workshop3.quenching.hardness }}</span>
-                    </div>
-                  </div>
-                </el-col>
-                <!-- 校直工序 -->
-                <el-col :span="24" v-if="traceData.workshop3?.straightening">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #E6A23C;">② 校直</div>
-                    <div class="detail-value">
-                      <span>校直力：{{ traceData.workshop3.straightening.straighteningForce }} | </span>
-                      <span>回火温度：{{ traceData.workshop3.straightening.temperingTemp }} | </span>
-                      <span>保温时间：{{ traceData.workshop3.straightening.holdTime }}</span>
-                    </div>
-                  </div>
-                </el-col>
-                <!-- 检验工序 -->
-                <el-col :span="24" v-if="traceData.workshop3?.inspection">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #E6A23C;">③ 检验</div>
-                    <div class="detail-value">
-                      <span>缺陷等级：<el-tag :type="traceData.workshop3.inspection.defectLevel === '无' ? 'success' : 'danger'" size="mini">{{ traceData.workshop3.inspection.defectLevel }}</el-tag> | </span>
-                      <span>缺陷位置：{{ traceData.workshop3.inspection.defectPosition }} | </span>
-                      <span>检验员：{{ traceData.workshop3.inspection.inspector }}</span>
-                    </div>
-                  </div>
-                </el-col>
-                <!-- 精车孔工序 -->
-                <el-col :span="24" v-if="traceData.workshop3?.fineTurning">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #E6A23C;">④ 精车孔</div>
-                    <div class="detail-value">
-                      <span>公差：{{ traceData.workshop3.fineTurning.tolerance }} | </span>
-                      <span>孔精度：{{ traceData.workshop3.fineTurning.holeAccuracy }} | </span>
-                      <span>设备编号：{{ traceData.workshop3.fineTurning.equipmentNo }}</span>
-                    </div>
-                  </div>
-                </el-col>
+                  </el-col>
+                </template>
               </el-row>
             </div>
 
@@ -744,67 +506,22 @@
                 </div>
               </div>
               <el-row :gutter="20" class="section-content">
-                <el-col :span="8">
+                <!-- 区块链数据：只保留车间真实上链的字段 -->
+                <el-col :span="24" v-if="!traceData.workshop4 || Object.keys(traceData.workshop4).length === 0">
                   <div class="detail-item">
-                    <div class="detail-label">装配日期</div>
-                    <div class="detail-value">{{ traceData.workshop4?.assemblyDate || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">装配员</div>
-                    <div class="detail-value">{{ traceData.workshop4?.assembler || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="detail-item">
-                    <div class="detail-label">工位编号</div>
-                    <div class="detail-value">{{ traceData.workshop4?.workstationNo || '--' }}</div>
-                  </div>
-                </el-col>
-                <el-col :span="12">
-                  <div class="detail-item">
-                    <div class="detail-label">配件清单</div>
-                    <div class="detail-value">
-                      <span v-if="traceData.workshop4?.partsList?.length">
-                        {{ traceData.workshop4.partsList.join(', ') }}
-                      </span>
-                      <span v-else>--</span>
+                    <div class="detail-value" style="color: #909399; text-align: center; padding: 20px;">
+                      暂无数据
                     </div>
                   </div>
                 </el-col>
-                <el-col :span="12">
-                  <div class="detail-item">
-                    <div class="detail-label">检测员</div>
-                    <div class="detail-value">
-                      <span v-if="traceData.workshop4?.assemblyCheck?.inspector">
-                        {{ traceData.workshop4.assemblyCheck.inspector }}
-                      </span>
-                      <span v-else>--</span>
+                <template v-else>
+                  <el-col :span="8" v-for="(value, key) in traceData.workshop4" :key="key">
+                    <div class="detail-item">
+                      <div class="detail-label">{{ formatFieldName(key) }}</div>
+                      <div class="detail-value">{{ formatFieldValue(value) }}</div>
                     </div>
-                  </div>
-                </el-col>
-                <!-- 喷漆工序 -->
-                <el-col :span="24" v-if="traceData.workshop4?.painting">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #F56C6C;">① 喷漆</div>
-                    <div class="detail-value">
-                      <span>漆面厚度：{{ traceData.workshop4.painting.paintThickness }} | </span>
-                      <span>喷涂压力：{{ traceData.workshop4.painting.sprayPressure }} | </span>
-                      <span>油漆批次：{{ traceData.workshop4.painting.paintBatch }}</span>
-                    </div>
-                  </div>
-                </el-col>
-                <!-- 包装工序 -->
-                <el-col :span="24" v-if="traceData.workshop4?.packing">
-                  <div class="detail-item full-width">
-                    <div class="detail-label" style="font-weight: bold; color: #F56C6C;">② 包装</div>
-                    <div class="detail-value">
-                      <span>包装时间：{{ traceData.workshop4.packing.packTime }} | </span>
-                      <span>包装员：{{ traceData.workshop4.packing.packOperator }}</span>
-                    </div>
-                  </div>
-                </el-col>
+                  </el-col>
+                </template>
               </el-row>
             </div>
 
@@ -896,37 +613,182 @@
               <i class="el-icon-connection"></i>
               区块链存证信息
             </h3>
+            <el-tag type="success" size="small" effect="dark">
+              <i class="el-icon-circle-check"></i> 已上链验证
+            </el-tag>
           </div>
           <div class="blockchain-content">
-            <el-row :gutter="20">
+            <!-- 第一行：区块链基本信息 -->
+            <el-row :gutter="20" class="blockchain-row">
               <el-col :span="8">
                 <div class="blockchain-item">
-                  <div class="blockchain-label">区块哈希</div>
-                  <div class="blockchain-value hash-value">{{ traceData.blockchainInfo?.blockHash }}</div>
+                  <div class="blockchain-label">
+                    <i class="el-icon-s-grid"></i>
+                    区块哈希
+                  </div>
+                  <div class="blockchain-value hash-value" :title="traceData.blockchainInfo?.blockHash">
+                    {{ traceData.blockchainInfo?.blockHash || '--' }}
+                  </div>
                 </div>
               </el-col>
               <el-col :span="8">
                 <div class="blockchain-item">
-                  <div class="blockchain-label">交易ID</div>
-                    <div class="blockchain-value">{{ traceData.blockchainInfo?.transactionId }}</div>
+                  <div class="blockchain-label">
+                    <i class="el-icon-link"></i>
+                    交易哈希
+                  </div>
+                  <div class="blockchain-value hash-value" :title="traceData.blockchainInfo?.transactionHash">
+                    {{ traceData.blockchainInfo?.transactionHash || traceData.blockchainInfo?.transactionId || '--' }}
+                  </div>
                 </div>
               </el-col>
               <el-col :span="8">
                 <div class="blockchain-item">
-                  <div class="blockchain-label">上链时间</div>
-                  <div class="blockchain-value">{{ traceData.blockchainInfo?.onChainTime }}</div>
+                  <div class="blockchain-label">
+                    <i class="el-icon-time"></i>
+                    查询时间
+                  </div>
+                  <div class="blockchain-value time-value">
+                    {{ traceData.blockchainInfo?.onChainTime || traceData.blockchainInfo?.timestamp || '--' }}
+                  </div>
                 </div>
               </el-col>
             </el-row>
-            <div class="blockchain-qr" v-if="traceData.blockchainInfo?.blockHash">
-              <div class="qr-title">区块链验证二维码</div>
-              <div class="qr-code-placeholder">
-                <div class="qr-code">
-                  <i class="el-icon-picture-outline"></i>
-                  <span>二维码区域</span>
+
+            <!-- 第二行：区块链详细信息 -->
+            <el-row :gutter="20" class="blockchain-row">
+              <el-col :span="8">
+                <div class="blockchain-item">
+                  <div class="blockchain-label">
+                    <i class="el-icon-box"></i>
+                    区块高度
+                  </div>
+                  <div class="blockchain-value">
+                    {{ traceData.blockchainInfo?.blockNumber || traceData.blockchainInfo?.blockHeight || '--' }}
+                  </div>
                 </div>
-                <p class="qr-tip">扫描二维码验证区块链存证信息</p>
+              </el-col>
+              <el-col :span="8">
+                <div class="blockchain-item">
+                  <div class="blockchain-label">
+                    <i class="el-icon-document"></i>
+                    合约地址
+                  </div>
+                  <div class="blockchain-value hash-value" :title="traceData.blockchainInfo?.contractAddress">
+                    {{ traceData.blockchainInfo?.contractAddress || '--' }}
+                  </div>
+                </div>
+              </el-col>
+              <el-col :span="8">
+                <div class="blockchain-item">
+                  <div class="blockchain-label">
+                    <i class="el-icon-user"></i>
+                    上链账户
+                  </div>
+                  <div class="blockchain-value hash-value" :title="traceData.blockchainInfo?.fromAddress">
+                    {{ traceData.blockchainInfo?.fromAddress || traceData.blockchainInfo?.sender || '--' }}
+                  </div>
+                </div>
+              </el-col>
+            </el-row>
+
+            <!-- 第三行：区块链网络信息 -->
+            <el-row :gutter="20" class="blockchain-row">
+              <el-col :span="8">
+                <div class="blockchain-item">
+                  <div class="blockchain-label">
+                    <i class="el-icon-guide"></i>
+                    区块链网络
+                  </div>
+                  <div class="blockchain-value">
+                    {{ traceData.blockchainInfo?.network || 'FISCO BCOS' }}
+                  </div>
+                </div>
+              </el-col>
+              <el-col :span="8">
+                <div class="blockchain-item">
+                  <div class="blockchain-label">
+                    <i class="el-icon-data-line"></i>
+                    验证状态
+                  </div>
+                  <div class="blockchain-value">
+                    <el-tag type="success" size="mini" effect="plain">
+                      <i class="el-icon-success"></i> 已验证
+                    </el-tag>
+                  </div>
+                </div>
+              </el-col>
+              <el-col :span="8">
+                <div class="blockchain-item">
+                  <div class="blockchain-label">
+                    <i class="el-icon-finished"></i>
+                    存证状态
+                  </div>
+                  <div class="blockchain-value">
+                    <el-tag type="success" size="mini" effect="plain">
+                      <i class="el-icon-check"></i> 不可篡改
+                    </el-tag>
+                  </div>
+                </div>
+              </el-col>
+            </el-row>
+
+            <!-- 区块链验证区域 -->
+            <div class="blockchain-verify-section">
+              <div class="verify-title">
+                <i class="el-icon-trophy"></i>
+                区块链验证保证
               </div>
+              <div class="verify-content">
+                <el-row :gutter="16">
+                  <el-col :span="6">
+                    <div class="verify-item">
+                      <i class="el-icon-lock verify-icon"></i>
+                      <div class="verify-text">数据加密</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div class="verify-item">
+                      <i class="el-icon-circle-check verify-icon"></i>
+                      <div class="verify-text">不可篡改</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div class="verify-item">
+                      <i class="el-icon-time verify-icon"></i>
+                      <div class="verify-text">时间戳证明</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div class="verify-item">
+                      <i class="el-icon-view verify-icon"></i>
+                      <div class="verify-text">公开可验证</div>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+
+            <!-- 区块链浏览器链接 -->
+            <div class="blockchain-explorer" v-if="traceData.blockchainInfo?.blockHash">
+              <el-button 
+                type="primary" 
+                size="small" 
+                icon="el-icon-view"
+                @click="viewInExplorer"
+                plain
+              >
+                在区块链浏览器中查看
+              </el-button>
+              <el-button 
+                type="success" 
+                size="small" 
+                icon="el-icon-download"
+                @click="downloadBlockchainProof"
+                plain
+              >
+                下载存证证书
+              </el-button>
             </div>
           </div>
         </div>
@@ -1011,7 +873,7 @@ export default {
       if (!this.traceData.qualityStatus) return '未知'
       return this.traceData.qualityStatus === '合格' ? '质量合格' : '质量异常'
     }
-  },
+  },//const response = await this.queryTraceData(this.queryForm.shaftCode)
   methods: {
     // 查询处理
     async handleQuery() {
@@ -1024,7 +886,7 @@ export default {
         this.queryLoading = true
         this.loading = true
         
-        // 调用后端API查询溯源信息
+        
         const response = await this.queryTraceData(this.queryForm.shaftCode)
         
         if (response && response.success) {
@@ -1203,8 +1065,10 @@ export default {
         
     // 转换后端数据为前端展示格式
     transformTraceData(shaftCode, backendData) {
+      console.log('🔍 后端返回的原始数据:', backendData)
+      
       // 直接使用后端返回的真实数据，不再填充模拟数据
-      return {
+      const result = {
         shaftCode,
         productModel: backendData.productModel || '--',
         batchNumber: backendData.materialBatch || '--',
@@ -1234,6 +1098,17 @@ export default {
         // 区块链信息 - 从后端获取
         blockchainInfo: backendData.blockchainInfo || null
       }
+      
+      console.log('✅ 转换后的数据:', result)
+      console.log('📊 车间数据状态:', {
+        workshop1: result.workshop1 ? 'OK' : 'NULL',
+        workshop2: result.workshop2 ? 'OK' : 'NULL',
+        workshop3: result.workshop3 ? 'OK' : 'NULL',
+        workshop4: result.workshop4 ? 'OK' : 'NULL',
+        blockchain: result.blockchainInfo ? 'OK' : 'NULL'
+      })
+      
+      return result
     },
 
 
@@ -1262,6 +1137,237 @@ export default {
       return workshop.status === '已完成' ? 'success' : 
              workshop.status === '进行中' ? 'warning' : 
              workshop.status === '异常' ? 'danger' : 'info'
+    },
+
+    // 格式化字段名称（英文转中文）
+    formatFieldName(key) {
+      const fieldMap = {
+        // 一车间（锻造）
+        'pressing': '压制工序',
+        'cutting': '切割工序',
+        'forging': '锻造工序',
+        'splineSize': '花键尺寸',
+        'pressure': '压力',
+        'equipmentNo': '设备编号',
+        'cutSpeed': '切割速度',
+        'materialBatch': '材料批次',
+        'cutSize': '切割尺寸',
+        'operator': '操作员',
+        'defect': '缺陷',
+        'forgingTemp': '锻造温度',
+        'holdTime': '保温时间',
+        
+        // 二车间（热处理）
+        'heatTreatment': '热处理工序',
+        'quenching': '淬火工序',
+        'tempering': '回火工序',
+        'heatingTemp': '加热温度',
+        'coolingMethod': '冷却方式',
+        'coolingRate': '冷却速率',
+        'quenchingTemp': '淬火温度',
+        'temperingTemp': '回火温度',
+        'hardness': '硬度',
+        'hardnessValue': '硬度值',
+        'treatmentTime': '处理时间',
+        'furnaceNo': '炉号',
+        'drilling': '钻孔工序',
+        'gear': '齿轮工序',
+        'hole': '孔位',
+        'holeSize': '孔径',
+        'drillSpeed': '钻孔速度',
+        'gearAccuracy': '齿轮精度',
+        'surface': '表面',
+        'toothProfile': '齿形',
+        '加热温度': '加热温度',
+        '保温时间': '保温时间',
+        
+        // 三车间（机加工）
+        'machining': '机加工工序',
+        'turning': '车削工序',
+        'milling': '铣削工序',
+        'grinding': '磨削工序',
+        'machineNo': '机床编号',
+        'cuttingSpeed': '切削速度',
+        'feedRate': '进给速度',
+        'depth': '加工深度',
+        'dimension': '尺寸',
+        'tolerance': '公差',
+        'surfaceRoughness': '表面粗糙度',
+        'precision': '精度',
+        'straightening': '矫直工序',
+        'straighteningForce': '矫直力',
+        'fine': '精加工工序',
+        'holeAccuracy': '孔精度',
+        '回火温度': '回火温度',
+        '保温时间': '保温时间',
+        '年削工序速度': '车削工序速度',
+        '表面粗糙度': '表面粗糙度',
+        '浮火工序': '淬火工序',
+        'coolingMedium': '冷却介质',
+        '硬度': '硬度',
+        '浮火温度': '淬火温度',
+        '检验': '检验',
+        '缺陷Position': '缺陷位置',
+        '缺陷等级': '缺陷等级',
+        '检验员名称': '检验员名称',
+        
+        // 四车间（装配）
+        'assembly': '装配工序',
+        'preAssembly': '预装配',
+        'finalAssembly': '总装配',
+        'inspection': '检验',
+        'assemblyNo': '装配编号',
+        'assemblyLine': '装配线',
+        'torque': '扭矩',
+        'clearance': '间隙',
+        'alignment': '对齐度',
+        'assemblyTime': '装配时间',
+        'inspector': '检验员',
+        'testResult': '测试结果',
+        'painting': '喷漆工序',
+        'packing': '包装工序',
+        'spray': '喷涂',
+        'sprayPressure': '喷涂压力',
+        'paintBatch': '油漆批次',
+        'paint': '油漆',
+        '厚度': '厚度',
+        'pack': '包装',
+        'packWorker': '包装作业员',
+        'packTime': '包装时间',
+        '操作员': '包装操作员',
+        '时间': '包装时间',
+        
+        // 通用字段
+        'status': '状态',
+        'time': '时间',
+        'date': '日期',
+        'result': '结果',
+        'quality': '质量',
+        'timestamp': '时间戳',
+        'temperature': '温度',
+        'duration': '时长',
+        'remark': '备注',
+        'batchNo': '批次号',
+        'processTime': '加工时间',
+        'workshop': '车间',
+        'process': '工序',
+        'product': '产品',
+        'material': '材料',
+        'equipment': '设备',
+        'worker': '工人',
+        'shift': '班次',
+        'location': '位置',
+        'quantity': '数量',
+        'weight': '重量',
+        'length': '长度',
+        'width': '宽度',
+        'height': '高度',
+        'diameter': '直径',
+        'thickness': '厚度',
+        'speed': '速度',
+        'power': '功率',
+        'voltage': '电压',
+        'current': '电流',
+        'frequency': '频率',
+        'humidity': '湿度',
+        'pH': '酸碱度',
+        'density': '密度',
+        'viscosity': '粘度',
+        'color': '颜色',
+        'texture': '纹理',
+        'finish': '表面处理',
+        'coating': '涂层',
+        'treatment': '处理',
+        'test': '测试',
+        'check': '检查',
+        'verify': '验证',
+        'approve': '批准',
+        'reject': '拒绝',
+        'pass': '通过',
+        'fail': '失败',
+        'error': '错误',
+        'warning': '警告',
+        'info': '信息',
+        'note': '注释',
+        'comment': '评论',
+        'description': '描述',
+        'name': '名称',
+        'code': '编码',
+        'id': '编号',
+        'number': '号码',
+        'type': '类型',
+        'category': '分类',
+        'group': '组别',
+        'level': '等级',
+        'grade': '级别',
+        'priority': '优先级',
+        'version': '版本',
+        'revision': '修订',
+        'update': '更新',
+        'create': '创建',
+        'modify': '修改',
+        'delete': '删除',
+        'startTime': '开始时间',
+        'endTime': '结束时间',
+        'createTime': '创建时间',
+        'updateTime': '更新时间',
+        'user': '用户',
+        'creator': '创建人',
+        'updater': '更新人',
+        'supplier': '供应商',
+        'customer': '客户',
+        'vendor': '供应商',
+        'manufacturer': '制造商',
+        'batch': '批次',
+        'lot': '批号',
+        'serial': '序列号',
+        'model': '型号',
+        'specification': '规格',
+        'standard': '标准',
+        'reference': '参考',
+        'value': '数值',
+        'unit': '单位',
+        'range': '范围',
+        'min': '最小值',
+        'max': '最大值',
+        'avg': '平均值',
+        'total': '总计',
+        'count': '计数',
+        'rate': '速率',
+        'ratio': '比率',
+        'percent': '百分比',
+        'force': '力',
+        'medium': '介质',
+        'position': '位置',
+        'accuracy': '精度'
+      }
+      
+      // 如果有映射就返回中文
+      if (fieldMap[key]) {
+        return fieldMap[key]
+      }
+      
+      // 对于没有映射的字段，尝试智能转换
+      // 将驼峰命名转换为带空格的形式，然后翻译常见单词
+      const words = key.replace(/([A-Z])/g, ' $1').trim().split(' ')
+      const translatedWords = words.map(word => {
+        const lowerWord = word.toLowerCase()
+        return fieldMap[lowerWord] || word
+      })
+      
+      return translatedWords.join('')
+    },
+
+    // 格式化字段值
+    formatFieldValue(value) {
+      if (value === null || value === undefined) return '--'
+      if (typeof value === 'object') {
+        // 如果是对象，递归显示其字段
+        return Object.entries(value)
+          .map(([k, v]) => `${this.formatFieldName(k)}: ${this.formatFieldValue(v)}`)
+          .join(', ')
+      }
+      return String(value)
     },
 
     // 刷新页面
@@ -1386,6 +1492,47 @@ export default {
     viewReport(url) {
       this.$message.info(`打开报告：${url}`)
       // window.open(url, '_blank')
+    },
+
+    // 在区块链浏览器中查看
+    viewInExplorer() {
+      const blockHash = this.traceData.blockchainInfo?.blockHash
+      if (blockHash) {
+        // 这里可以根据实际的区块链浏览器URL进行跳转
+        const explorerUrl = `http://your-blockchain-explorer.com/block/${blockHash}`
+        this.$message.info('正在打开区块链浏览器...')
+        // window.open(explorerUrl, '_blank')
+        console.log('区块链浏览器URL:', explorerUrl)
+      } else {
+        this.$message.warning('区块哈希不存在')
+      }
+    },
+
+    // 下载区块链存证证书
+    async downloadBlockchainProof() {
+      try {
+        this.$message.info('正在生成存证证书...')
+        
+        // 调用后端API生成证书
+        const response = await axios.get(
+          `/api/blockchain/proof/${this.traceData.shaftCode}`,
+          { responseType: 'blob' }
+        )
+        
+        // 创建下载链接
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', `区块链存证证书_${this.traceData.shaftCode}_${new Date().getTime()}.pdf`)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        this.$message.success('存证证书下载成功！')
+      } catch (error) {
+        console.error('下载存证证书失败:', error)
+        this.$message.error('下载失败，请稍后重试')
+      }
     }
   },
   
@@ -2007,102 +2154,199 @@ export default {
 /* 区块链信息 */
 .blockchain-info-card {
   background: linear-gradient(135deg, #f0f9ff, #e6f7ff);
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #d1e9ff;
-  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.08);
+  border-radius: 16px;
+  padding: 28px;
+  border: 2px solid #91d5ff;
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.15);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.blockchain-info-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(24, 144, 255, 0.05) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .blockchain-header {
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #d1e9ff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #91d5ff;
+  position: relative;
+  z-index: 1;
 }
 
 .blockchain-title {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: #1890ff;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.blockchain-title i {
+  font-size: 24px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 .blockchain-content {
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #e8f4ff;
+  position: relative;
+  z-index: 1;
+}
+
+.blockchain-row {
+  margin-bottom: 20px;
 }
 
 .blockchain-item {
-  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 16px;
+  height: 100%;
+  border: 1px solid #d9f1ff;
+  transition: all 0.3s ease;
+}
+
+.blockchain-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.2);
+  border-color: #1890ff;
 }
 
 .blockchain-label {
   font-size: 13px;
   color: #666;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.blockchain-label i {
+  color: #1890ff;
+  font-size: 16px;
 }
 
 .blockchain-value {
   font-size: 14px;
-  color: #1890ff;
+  color: #303133;
   word-break: break-all;
   font-family: 'Courier New', monospace;
   font-weight: 500;
+  line-height: 1.6;
 }
 
 .hash-value {
   font-size: 12px;
-  color: #36cfc9;
+  color: #1890ff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
 }
 
-.blockchain-qr {
+.time-value {
+  color: #52c41a;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* 区块链验证区域 */
+.blockchain-verify-section {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 20px;
   margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #e8e8e8;
-  text-align: center;
+  border: 2px dashed #91d5ff;
 }
 
-.qr-title {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 12px;
+.verify-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1890ff;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verify-title i {
+  font-size: 20px;
+  color: #faad14;
+}
+
+.verify-content {
+  margin-top: 12px;
+}
+
+.verify-item {
+  text-align: center;
+  padding: 16px 8px;
+  background: linear-gradient(135deg, #f0f9ff, #ffffff);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.verify-item:hover {
+  background: linear-gradient(135deg, #e6f7ff, #f0f9ff);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+}
+
+.verify-icon {
+  font-size: 32px;
+  color: #52c41a;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.verify-text {
+  font-size: 13px;
+  color: #666;
   font-weight: 500;
 }
 
-.qr-code-placeholder {
-  display: inline-block;
-  padding: 20px;
-  background: #f5f5f5;
-  border-radius: 8px;
-}
-
-.qr-code {
-  width: 120px;
-  height: 120px;
-  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
-  border-radius: 6px;
+/* 区块链浏览器链接 */
+.blockchain-explorer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #d9f1ff;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  gap: 12px;
   justify-content: center;
-  color: #999;
-  margin-bottom: 8px;
 }
 
-.qr-code i {
-  font-size: 32px;
-  margin-bottom: 8px;
+.blockchain-explorer .el-button {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-.qr-tip {
-  font-size: 12px;
-  color: #999;
-  margin: 0;
+.blockchain-explorer .el-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
 }
 
 /* 加载状态 */

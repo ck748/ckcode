@@ -115,7 +115,7 @@
             <div class="chain-line main-chain-line"></div>
             <div class="chain-line secondary-chain-line"></div>
             
-            <!-- 链标签 - 只调整私有链位置 -->
+            <!-- 链标签 -->
             <div class="chain-label private-chain">
               <div class="chain-tag">私有链</div>
             </div>
@@ -123,7 +123,7 @@
               <div class="chain-tag">联盟链</div>
             </div>
             
-            <!-- 第一条链：私有链区块节点 - 显示5个 -->
+            <!-- 第一条链：私有链区块节点 -->
             <div class="chain-nodes chain-1">
               <div 
                 class="block-node" 
@@ -143,7 +143,7 @@
               </div>
             </div>
             
-            <!-- 第二条链：联盟链区块节点 - 显示5个 -->
+            <!-- 第二条链：联盟链区块节点 -->
             <div class="chain-nodes chain-2">
               <div 
                 class="block-node" 
@@ -217,147 +217,63 @@
         </div>
       </div>
 
-      <!-- 右侧：产品溯源 -->
+      <!-- 右侧：联盟生态监控 (已修改) -->
       <div class="panel right-panel">
         <div class="panel-header">
           <h3 class="panel-title">
             <span class="title-line"></span>
-            <span>产品溯源</span>
+            <span>联盟生态监控</span>
           </h3>
-          <div class="panel-subtitle">PRODUCT TRACEABILITY</div>
+          <div class="panel-subtitle">ALLIANCE ECOSYSTEM</div>
         </div>
         
-        <!-- 溯源查询 -->
-        <div class="trace-query">
-          <div class="query-input-group">
-            <div class="input-prefix">
-              <span class="prefix-icon">🔍</span>
-              <span class="prefix-text">产品溯源查询</span>
+        <!-- 网络性能雷达图 -->
+        <div class="network-radar-container">
+          <div class="chart-title">联盟协作指标</div>
+          <div id="radarChart" class="radar-chart"></div>
+        </div>
+
+        <!-- 智能合约状态 -->
+        <div class="contracts-monitor">
+          <div class="section-label">核心智能合约</div>
+          <div class="contracts-grid">
+            <div class="contract-card" v-for="contract in smartContracts" :key="contract.name">
+              <div class="contract-icon" :class="contract.class">{{ contract.icon }}</div>
+              <div class="contract-info">
+                <div class="contract-name">{{ contract.name }}</div>
+                <div class="contract-calls">{{ formatNumber(contract.calls) }} 次</div>
+              </div>
+              <div class="contract-status">
+                <span class="status-dot pulse"></span>
+              </div>
             </div>
-            <div class="custom-input">
-              <input 
-                v-model="queryId" 
-                placeholder="输入产品ID或批次号"
-                @keyup.enter="searchTrace"
-              />
-              <button class="query-btn" @click="searchTrace">
-                查询
-              </button>
-            </div>
-          </div>
-          
-          <div class="query-examples">
-            <span class="example-label">示例:</span>
-            <span 
-              v-for="example in examples" 
-              :key="example"
-              class="example-item"
-              @click="queryId = example; searchTrace()"
-            >
-              {{ example }}
-            </span>
           </div>
         </div>
 
-        <!-- 溯源结果容器 -->
-        <div class="trace-result-container" ref="traceResultContainer">
-          <div class="trace-result" v-if="traceResult">
-            <div class="result-header">
-              <div class="result-title">
-                <h4>溯源结果</h4>
-                <div class="product-id-display">{{ traceResult.productId }}</div>
-              </div>
-              <div class="result-status">
-                <span class="status-badge" :class="traceResult.statusClass">{{ traceResult.traceStatus }}</span>
-                <span class="status-time">{{ traceResult.updateTime }}</span>
-              </div>
-            </div>
-            
-            <div class="product-quick-info">
-              <div class="quick-info-item">
-                <span class="info-label">产品批次</span>
-                <span class="info-value">{{ traceResult.batch }}</span>
-              </div>
-              <div class="quick-info-item">
-                <span class="info-label">生产状态</span>
-                <span class="info-value" :class="traceResult.productionStatusClass">
-                  {{ traceResult.productionStatus }}
-                </span>
-              </div>
-              <div class="quick-info-item">
-                <span class="info-label">质量评级</span>
-                <span class="info-value" :class="traceResult.qualityClass">
-                  {{ traceResult.quality }}
-                </span>
-              </div>
-            </div>
-
-            <!-- 可滚动的时间线 -->
-            <div class="trace-timeline-wrapper">
-              <div class="timeline-header">
-                <div class="timeline-title">生产溯源流程</div>
-                <div class="timeline-stats">
-                  <span>共 {{ traceResult.steps.length }} 个工序</span>
-                  <span class="scroll-hint">↕️ 可滚动查看更多</span>
-                </div>
-              </div>
-              
-              <div class="timeline-container" ref="timelineContainer">
-                <div 
-                  class="timeline-item" 
-                  v-for="(step, index) in traceResult.steps" 
-                  :key="index"
-                >
-                  <div class="timeline-marker">
-                    <div class="marker-icon">{{ step.icon }}</div>
-                    <div class="marker-line" v-if="index < traceResult.steps.length - 1"></div>
-                  </div>
-                  <div class="timeline-content">
-                    <div class="timeline-header">
-                      <span class="timeline-stage">{{ step.stage }}</span>
-                      <span class="timeline-time">{{ step.time }}</span>
-                    </div>
-                    <div class="timeline-desc">{{ step.description }}</div>
-                    <div class="timeline-meta">
-                      <span class="meta-item" v-if="step.operator">
-                        <span class="meta-icon">👤</span>
-                        {{ step.operator }}
-                      </span>
-                      <span class="meta-item" v-if="step.equipment">
-                        <span class="meta-icon">⚙️</span>
-                        {{ step.equipment }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <!-- 联盟成员列表 (已修改：脱敏、去等级化) -->
+        <div class="member-list-container">
+          <div class="list-header">
+            <span class="col-org">成员机构</span>
+            <span class="col-role">联盟角色</span>
+            <span class="col-credit">贡献积分</span>
           </div>
-
-          <!-- 最近查询记录 -->
-          <div class="recent-queries" v-if="recentQueries.length > 0">
-            <div class="queries-header">
-              <h4>最近查询记录</h4>
-              <div class="queries-controls">
-                <span class="queries-count">共 {{ recentQueries.length }} 条</span>
-                <button class="clear-btn" @click="clearRecentQueries">清空</button>
-              </div>
-            </div>
-            <div class="queries-list">
-              <div 
-                class="query-item" 
-                v-for="(query, index) in recentQueries" 
-                :key="index"
-                @click="queryId = query.id; searchTrace()"
-              >
-                <div class="query-icon">📋</div>
-                <div class="query-info">
-                  <div class="query-id">{{ query.id }}</div>
-                  <div class="query-meta">
-                    <span class="query-time">{{ query.time }}</span>
-                    <span class="query-status" :class="query.statusClass">{{ query.status }}</span>
-                  </div>
+          <div class="member-list-content">
+            <div class="member-row" v-for="member in allianceMembers" :key="member.id">
+              <div class="col-org">
+                <div class="org-icon">{{ member.icon }}</div>
+                <div class="org-info">
+                  <span class="org-name">{{ member.name }}</span>
+                  <span class="org-type">{{ member.type }}</span>
                 </div>
+              </div>
+              <div class="col-role">
+                <span class="role-badge" :class="member.roleClass">{{ member.role }}</span>
+              </div>
+              <div class="col-credit">
+                <div class="credit-bar-bg">
+                  <div class="credit-bar" :style="{ width: member.credit + '%' }"></div>
+                </div>
+                <span class="credit-val">{{ member.credit }}</span>
               </div>
             </div>
           </div>
@@ -431,14 +347,14 @@ export default {
       stats: [
         {
           icon: '⛓️',
-          value: '18,472',
+          value: '184',
           label: '区块总数',
           trend: '↑ 12个/小时',
           trendClass: 'trend-up'
         },
         {
           icon: '📦',
-          value: '1,248',
+          value: '25',
           label: '今日上链',
           trend: '↑ 86件',
           trendClass: 'trend-up'
@@ -461,19 +377,36 @@ export default {
       
       // 区块链统计数据
       blockchainStats: {
-        totalBlocks: 18472,
-        todayTransactions: 1228,
+        totalBlocks: 184,
+        todayTransactions: 25,
         activeNodes: 12,
         blockTime: '3.2s',
         dataIntegrity: '99.98%'
       },
       
+      // 右侧新数据：智能合约
+      smartContracts: [
+        { name: 'TraceCode.sol', calls: 15420, icon: '🏷️', class: 'trace' },
+        { name: 'QualityCheck.sol', calls: 8932, icon: '🛡️', class: 'quality' },
+        { name: 'SettlePay.sol', calls: 4210, icon: '💰', class: 'finance' }
+      ],
+      
+      // 右侧新数据：联盟成员 (脱敏 + 合作角色)
+      // roleClass 对应颜色：leader=橙色(核心), validator=绿色(协作), regulator=蓝色(监管), observer=灰色(服务)
+      allianceMembers: [
+        { id: 'm1', name: '某某某某集团', type: '核心企业', role: '战略协同节点', roleClass: 'leader', credit: 98, icon: '🏭' },
+        { id: 'm2', name: '某某精密制造', type: '原材料', role: '生产协作节点', roleClass: 'validator', credit: 92, icon: '🔩' },
+        { id: 'm3', name: '某某智慧物流', type: '物流运输', role: '流通溯源节点', roleClass: 'validator', credit: 88, icon: '🚚' },
+        { id: 'm4', name: '某市市场监管局', type: '政府监管', role: '合规监管节点', roleClass: 'regulator', credit: 99, icon: '🏛️' },
+        { id: 'm5', name: '某某商业银行', type: '金融服务', role: '绿色金融节点', roleClass: 'observer', credit: 95, icon: '🏦' },
+        { id: 'm6', name: '某某零部件', type: '配件供应', role: '配套供应节点', roleClass: 'validator', credit: 85, icon: '⚙️' }
+      ],
+      
+      radarData: [90, 85, 95, 88, 92], // 初始雷达图数据
+      
       // 查询相关
-      queryId: '',
       currentRange: '1h',
       selectedBlock: null,
-      traceResult: null,
-      recentQueries: [],
       
       // 时间范围选项
       timeRanges: [
@@ -482,9 +415,6 @@ export default {
         { label: '7天', value: '7d' },
         { label: '30天', value: '30d' }
       ],
-      
-      // 示例产品ID - 改为SN-数字数字-数字数字格式
-      examples: ['SN-45-23', 'SN-92-72', 'SN-67-34', 'SN-81-56'],
       
       // 数据标签映射
       dataLabels: {
@@ -505,6 +435,7 @@ export default {
       
       // 图表实例
       chainChart: null,
+      radarChart: null,
       
       // 图表数据
       chartData: [],
@@ -513,11 +444,10 @@ export default {
       timeInterval: null,
       dataStreamInterval: null,
       messageTimer: null,
-      chartUpdateTimer: null,
       
       // 当前区块高度
-      currentBlockHeight: 18472,
-      allianceChainHeight: 8500, // 联盟链区块高度
+      currentBlockHeight: 184,
+      allianceChainHeight: 56, // 联盟链区块高度
       
       // 产品型号选项
       productTypes: [
@@ -533,353 +463,7 @@ export default {
         const num1 = Math.floor(Math.random() * 90) + 10; // 10-99
         const num2 = Math.floor(Math.random() * 90) + 10; // 10-99
         return `SN-${num1}-${num2}`;
-      },
-      
-      // 溯源结果模板
-      traceTemplates: [
-        {
-          id: 'template-1',
-          productId: 'SN-45-23',
-          batch: 'BATCH-1220',
-          productionStatus: '已完成',
-          productionStatusClass: 'success',
-          quality: 'A+',
-          qualityClass: 'excellent',
-          traceStatus: '完整溯源',
-          statusClass: 'complete',
-          updateTime: '',
-          steps: [
-            {
-              stage: '原料入库',
-              icon: '📥',
-              time: '2023-12-15 08:30',
-              description: '40Cr钢材入库，批次号：MC202312001，检验合格，材料规格符合要求',
-              operator: '张工',
-              equipment: '行车-001'
-            },
-            {
-              stage: '切割下料',
-              icon: '✂️',
-              time: '2023-12-15 09:15',
-              description: '精密切割，尺寸控制±0.1mm，表面光滑无毛刺，切割面平整',
-              operator: '李工',
-              equipment: '数控切割机-002'
-            },
-            {
-              stage: '压花键',
-              icon: '⚙️',
-              time: '2023-12-15 10:30',
-              description: '花键压制，精度控制±0.02mm，齿形完整清晰，尺寸精度达标',
-              operator: '王工',
-              equipment: '压力机-003'
-            },
-            {
-              stage: '热处理',
-              icon: '🔥',
-              time: '2023-12-15 14:00',
-              description: '调质处理，硬度HRC28-32，组织均匀，达到技术要求',
-              operator: '赵工',
-              equipment: '热处理炉-004'
-            },
-            {
-              stage: '精加工',
-              icon: '⚡',
-              time: '2023-12-15 15:45',
-              description: '数控精车，表面粗糙度Ra0.8，尺寸精准符合图纸要求',
-              operator: '孙工',
-              equipment: '数控车床-005'
-            },
-            {
-              stage: '探伤检测',
-              icon: '🔍',
-              time: '2023-12-15 16:30',
-              description: '超声波探伤，无缺陷报告，质量达标，合格品入库',
-              operator: '周工',
-              equipment: '探伤仪-006'
-            },
-            {
-              stage: '质检包装',
-              icon: '📦',
-              time: '2023-12-15 17:15',
-              description: '最终质量检验，防锈包装，入库待发',
-              operator: '钱工',
-              equipment: '包装线-007'
-            }
-          ]
-        },
-        {
-          id: 'template-2',
-          productId: 'SN-92-72',
-          batch: 'BATCH-1219',
-          productionStatus: '有缺陷',
-          productionStatusClass: 'warning',
-          quality: 'C',
-          qualityClass: 'poor',
-          traceStatus: '存在异常',
-          statusClass: 'warning',
-          updateTime: '',
-          steps: [
-            {
-              stage: '原料入库',
-              icon: '📥',
-              time: '2023-12-14 09:00',
-              description: '45#钢材入库，检验发现表面有轻微锈蚀，需要除锈处理',
-              operator: '张工',
-              equipment: '行车-001'
-            },
-            {
-              stage: '切割下料',
-              icon: '✂️',
-              time: '2023-12-14 10:15',
-              description: '切割过程中出现轻微偏差，尺寸超差±0.3mm，需要返工',
-              operator: '李工',
-              equipment: '数控切割机-002'
-            },
-            {
-              stage: '压花键',
-              icon: '⚙️',
-              time: '2023-12-14 11:45',
-              description: '花键压制，齿形部分不清晰，需要重新压制',
-              operator: '王工',
-              equipment: '压力机-003'
-            },
-            {
-              stage: '热处理',
-              icon: '🔥',
-              time: '2023-12-14 15:30',
-              description: '调质处理，硬度HRC25-28，略低于技术要求',
-              operator: '赵工',
-              equipment: '热处理炉-004'
-            },
-            {
-              stage: '精加工',
-              icon: '⚡',
-              time: '2023-12-14 16:45',
-              description: '数控精车，表面粗糙度Ra1.6，需要进一步抛光',
-              operator: '孙工',
-              equipment: '数控车床-005'
-            },
-            {
-              stage: '探伤检测',
-              icon: '🔍',
-              time: '2023-12-14 17:30',
-              description: '超声波探伤发现微小裂纹，需要修复处理',
-              operator: '周工',
-              equipment: '探伤仪-006'
-            },
-            {
-              stage: '质检包装',
-              icon: '📦',
-              time: '2023-12-14 18:15',
-              description: '质量检验不合格，标识为缺陷品，隔离存放',
-              operator: '钱工',
-              equipment: '质检台-008'
-            }
-          ]
-        },
-        {
-          id: 'template-3',
-          productId: 'SN-67-34',
-          batch: 'BATCH-1221',
-          productionStatus: '返工中',
-          productionStatusClass: 'processing',
-          quality: 'B',
-          qualityClass: 'good',
-          traceStatus: '部分溯源',
-          statusClass: 'partial',
-          updateTime: '',
-          steps: [
-            {
-              stage: '原料入库',
-              icon: '📥',
-              time: '2023-12-16 08:45',
-              description: '42CrMo钢材入库，批次号：MC202312003，检验合格',
-              operator: '张工',
-              equipment: '行车-001'
-            },
-            {
-              stage: '切割下料',
-              icon: '✂️',
-              time: '2023-12-16 09:30',
-              description: '切割精度达标，尺寸控制良好',
-              operator: '李工',
-              equipment: '数控切割机-002'
-            },
-            {
-              stage: '压花键',
-              icon: '⚙️',
-              time: '2023-12-16 10:45',
-              description: '花键压制质量良好，精度符合要求',
-              operator: '王工',
-              equipment: '压力机-003'
-            },
-            {
-              stage: '热处理',
-              icon: '🔥',
-              time: '2023-12-16 14:30',
-              description: '热处理过程中温度控制偏差，需要重新调整参数',
-              operator: '赵工',
-              equipment: '热处理炉-004'
-            },
-            {
-              stage: '返工处理',
-              icon: '🔧',
-              time: '2023-12-16 15:15',
-              description: '对热处理工序进行返工，调整工艺参数',
-              operator: '赵工',
-              equipment: '热处理炉-004'
-            },
-            {
-              stage: '精加工',
-              icon: '⚡',
-              time: '2023-12-16 16:00',
-              description: '精加工工序待进行，等待返工完成',
-              operator: '孙工',
-              equipment: '数控车床-005'
-            }
-          ]
-        },
-        {
-          id: 'template-4',
-          productId: 'SN-81-56',
-          batch: 'BATCH-1222',
-          productionStatus: '待检验',
-          productionStatusClass: 'pending',
-          quality: '待定',
-          qualityClass: 'pending',
-          traceStatus: '进行中',
-          statusClass: 'processing',
-          updateTime: '',
-          steps: [
-            {
-              stage: '原料入库',
-              icon: '📥',
-              time: '2023-12-17 08:30',
-              description: '40Cr钢材入库，批次号：MC202312004，检验合格',
-              operator: '张工',
-              equipment: '行车-001'
-            },
-            {
-              stage: '切割下料',
-              icon: '✂️',
-              time: '2023-12-17 09:45',
-              description: '切割工序完成，尺寸精度符合要求',
-              operator: '李工',
-              equipment: '数控切割机-002'
-            },
-            {
-              stage: '压花键',
-              icon: '⚙️',
-              time: '2023-12-17 11:00',
-              description: '花键压制完成，齿形清晰度良好',
-              operator: '王工',
-              equipment: '压力机-003'
-            },
-            {
-              stage: '热处理',
-              icon: '🔥',
-              time: '2023-12-17 14:15',
-              description: '热处理工序进行中，预计16:00完成',
-              operator: '赵工',
-              equipment: '热处理炉-004'
-            },
-            {
-              stage: '精加工',
-              icon: '⚡',
-              time: '2023-12-17 16:30',
-              description: '精加工工序安排中',
-              operator: '孙工',
-              equipment: '数控车床-005'
-            },
-            {
-              stage: '探伤检测',
-              icon: '🔍',
-              time: '待进行',
-              description: '等待精加工完成后进行探伤检测',
-              operator: '周工',
-              equipment: '探伤仪-006'
-            }
-          ]
-        },
-        {
-          id: 'template-5',
-          productId: 'SN-38-91',
-          batch: 'BATCH-1223',
-          productionStatus: '已发货',
-          productionStatusClass: 'shipped',
-          quality: 'A',
-          qualityClass: 'excellent',
-          traceStatus: '完整溯源',
-          statusClass: 'complete',
-          updateTime: '',
-          steps: [
-            {
-              stage: '原料入库',
-              icon: '📥',
-              time: '2023-12-13 08:15',
-              description: '40Cr钢材入库，批次号：MC202312005，检验优秀',
-              operator: '张工',
-              equipment: '行车-001'
-            },
-            {
-              stage: '切割下料',
-              icon: '✂️',
-              time: '2023-12-13 09:30',
-              description: '精密切割，尺寸控制±0.05mm，表面质量优秀',
-              operator: '李工',
-              equipment: '数控切割机-002'
-            },
-            {
-              stage: '压花键',
-              icon: '⚙️',
-              time: '2023-12-13 11:00',
-              description: '花键压制精度极高，齿形完美清晰',
-              operator: '王工',
-              equipment: '压力机-003'
-            },
-            {
-              stage: '热处理',
-              icon: '🔥',
-              time: '2023-12-13 14:30',
-              description: '调质处理优秀，硬度HRC30-32，组织非常均匀',
-              operator: '赵工',
-              equipment: '热处理炉-004'
-            },
-            {
-              stage: '精加工',
-              icon: '⚡',
-              time: '2023-12-13 16:00',
-              description: '数控精车，表面粗糙度Ra0.4，达到精密级要求',
-              operator: '孙工',
-              equipment: '数控车床-005'
-            },
-            {
-              stage: '探伤检测',
-              icon: '🔍',
-              time: '2023-12-13 17:15',
-              description: '超声波探伤无任何缺陷，质量优秀',
-              operator: '周工',
-              equipment: '探伤仪-006'
-            },
-            {
-              stage: '质检包装',
-              icon: '📦',
-              time: '2023-12-13 18:00',
-              description: '最终检验为A级品，精密包装',
-              operator: '钱工',
-              equipment: '包装线-007'
-            },
-            {
-              stage: '出库发货',
-              icon: '🚚',
-              time: '2023-12-14 09:30',
-              description: '产品已出库，发往客户仓库，物流单号：LD20231214001',
-              operator: '运输部',
-              equipment: '物流系统'
-            }
-          ]
-        }
-      ]
+      }
     };
   },
   created() {
@@ -890,7 +474,6 @@ export default {
     this.initCharts();
     this.initParticles();
     this.initDataStream();
-    this.loadRecentQueries();
     
     // 默认显示第一个区块的详情
     if (this.chain1Blocks.length > 0) {
@@ -905,14 +488,17 @@ export default {
     if (this.chainChart) {
       this.chainChart.dispose();
     }
+    if (this.radarChart) {
+      this.radarChart.dispose();
+    }
     window.removeEventListener('resize', this.handleResize);
   },
   methods: {
-    // 初始化双链 - 改为5个区块
+    // 初始化双链
     initializeChains() {
       const now = Date.now();
       
-      // 第一条链：私有链 - 改为5个区块
+      // 第一条链：私有链
       this.chain1Blocks = [
         {
           number: this.currentBlockHeight,
@@ -1001,7 +587,7 @@ export default {
         }
       ];
       
-      // 第二条链：联盟链 - 改为5个区块
+      // 第二条链：联盟链
       this.chain2Blocks = [
         {
           number: this.allianceChainHeight,
@@ -1121,168 +707,147 @@ export default {
       this.timeInterval = setInterval(updateTime, 1000);
     },
     
-    // 初始化图表 - 平滑波动
+    // 初始化图表
     initCharts() {
-      const chartDom = document.getElementById('chainChart');
-      if (!chartDom) return;
-      
-      this.chainChart = echarts.init(chartDom);
-      
-      // 初始化图表数据 - 创建平滑的波动
-      this.chartData = Array.from({ length: 60 }, (_, i) => {
-        // 基准值：20
-        const base = 20;
-        // 非常小的波动，几乎为直线
-        const wave = Math.sin(i / 20) * 0.5; // 减小波动幅度
-        // 添加极小的随机波动
-        const random = (Math.random() - 0.5) * 0.3; // 减小随机波动
+      // 1. 初始化左侧上链趋势图
+      const chainChartDom = document.getElementById('chainChart');
+      if (chainChartDom) {
+        this.chainChart = echarts.init(chainChartDom);
+        this.chartData = Array.from({ length: 60 }, (_, i) => {
+          const base = 20;
+          const wave = Math.sin(i / 20) * 0.5;
+          const random = (Math.random() - 0.5) * 0.3;
+          return Math.max(19.5, Math.min(20.5, base + wave + random));
+        });
         
-        return Math.max(19.5, Math.min(20.5, base + wave + random));
-      });
-      
-      const option = {
-        backgroundColor: 'transparent',
-        animation: true,
-        animationDuration: 1000,
-        animationEasing: 'cubicOut',
-        grid: {
-          left: '3%',
-          right: '3%',
-          top: '15%',
-          bottom: '10%',
-          containLabel: true
-        },
-        xAxis: {
-          type: 'category',
-          boundaryGap: false,
-          data: Array.from({ length: 60 }, (_, i) => `${i}分前`),
-          axisLine: {
-            lineStyle: {
-              color: 'rgba(10, 102, 204, 0.3)'
-            }
+        const chainOption = {
+          backgroundColor: 'transparent',
+          animation: true,
+          grid: { left: '3%', right: '3%', top: '15%', bottom: '10%', containLabel: true },
+          xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: Array.from({ length: 60 }, (_, i) => `${i}分前`),
+            axisLine: { lineStyle: { color: 'rgba(10, 102, 204, 0.3)' } },
+            axisLabel: { color: 'rgba(0, 0, 0, 0.6)', fontSize: 11 },
+            splitLine: { show: false }
           },
-          axisLabel: {
-            color: 'rgba(0, 0, 0, 0.6)',
-            fontSize: 11
+          yAxis: {
+            type: 'value',
+            min: 19,
+            max: 21,
+            axisLine: { show: false },
+            axisLabel: { color: 'rgba(0, 0, 0, 0.6)', fontSize: 11 },
+            splitLine: { lineStyle: { color: 'rgba(10, 102, 204, 0.1)', type: 'dashed' } }
           },
-          splitLine: {
-            show: false
-          }
-        },
-        yAxis: {
-          type: 'value',
-          name: '上链数/分钟',
-          nameTextStyle: {
-            color: 'rgba(0, 0, 0, 0.5)',
-            fontSize: 12
-          },
-          min: 19,
-          max: 21,
-          axisLine: {
-            show: false
-          },
-          axisLabel: {
-            color: 'rgba(0, 0, 0, 0.6)',
-            fontSize: 11
-          },
-          splitLine: {
-            lineStyle: {
-              color: 'rgba(10, 102, 204, 0.1)',
-              type: 'dashed'
-            }
-          }
-        },
-        series: [{
-          type: 'line',
-          data: this.chartData,
-          smooth: true,
-          symbol: 'circle',
-          symbolSize: 3,
-          lineStyle: {
-            width: 2,
-            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{
-              offset: 0,
-              color: '#0a66cc'
-            }, {
-              offset: 1,
-              color: '#0066ff'
-            }])
-          },
-          itemStyle: {
-            color: '#0a66cc'
-          },
-          areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-              offset: 0,
-              color: 'rgba(10, 102, 204, 0.2)'
-            }, {
-              offset: 1,
-              color: 'rgba(10, 102, 204, 0.02)'
-            }])
-          },
-          markPoint: {
+          series: [{
+            type: 'line',
+            data: this.chartData,
+            smooth: true,
             symbol: 'circle',
-            symbolSize: 5,
-            itemStyle: {
-              color: '#00a86b'
+            symbolSize: 3,
+            lineStyle: {
+              width: 2,
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#0a66cc' }, { offset: 1, color: '#0066ff' }])
             },
-            label: {
-              show: false
+            itemStyle: { color: '#0a66cc' },
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(10, 102, 204, 0.2)' }, { offset: 1, color: 'rgba(10, 102, 204, 0.02)' }])
+            }
+          }]
+        };
+        this.chainChart.setOption(chainOption);
+      }
+
+      // 2. 初始化右侧雷达图
+      const radarChartDom = document.getElementById('radarChart');
+      if (radarChartDom) {
+        this.radarChart = echarts.init(radarChartDom);
+        const radarOption = {
+          color: ['#0a66cc'],
+          tooltip: {},
+          radar: {
+            indicator: [
+              { name: '协作效率', max: 100 },
+              { name: '数据共享', max: 100 },
+              { name: '合约安全', max: 100 },
+              { name: '生态扩容', max: 100 },
+              { name: '合规治理', max: 100 }
+            ],
+            center: ['50%', '50%'],
+            radius: '65%',
+            axisName: {
+              color: 'rgba(0, 0, 0, 0.7)',
+              fontSize: 10
             },
-            data: [
-              { type: 'max', name: '最高值' },
-              { type: 'min', name: '最低值' }
-            ]
-          }
-        }],
-        tooltip: {
-          trigger: 'axis',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          borderColor: 'rgba(10, 102, 204, 0.3)',
-          textStyle: {
-            color: '#333'
+            splitLine: {
+              lineStyle: {
+                color: 'rgba(10, 102, 204, 0.2)'
+              }
+            },
+            splitArea: {
+              areaStyle: {
+                color: ['rgba(10, 102, 204, 0.02)', 'rgba(10, 102, 204, 0.05)']
+              }
+            },
+            axisLine: {
+              lineStyle: {
+                color: 'rgba(10, 102, 204, 0.2)'
+              }
+            }
           },
-          formatter: (params) => {
-            const data = params[0];
-            return `时间: ${data.name}<br/>上链数: ${data.value.toFixed(1)}`;
-          }
-        }
-      };
-      
-      this.chainChart.setOption(option);
+          series: [{
+            name: '联盟链指标',
+            type: 'radar',
+            data: [{
+              value: this.radarData,
+              name: '当前状态',
+              symbol: 'circle',
+              symbolSize: 4,
+              itemStyle: { color: '#00a86b' },
+              areaStyle: {
+                color: 'rgba(0, 168, 107, 0.2)'
+              },
+              lineStyle: {
+                color: '#00a86b',
+                width: 2
+              }
+            }]
+          }]
+        };
+        this.radarChart.setOption(radarOption);
+      }
     },
     
-    // 更新图表数据 - 平滑波动
+    // 更新图表数据
     updateChartData() {
-      if (!this.chainChart) return;
-      
-      // 移除第一个数据点
-      this.chartData.shift();
-      
-      // 生成新的数据点，保持平滑的波动
-      const lastValue = this.chartData[this.chartData.length - 1] || 20;
-      const base = 20;
-      
-      // 非常小的波动
-      const timeFactor = Date.now() / 60000; // 每60秒一个周期
-      let wave = Math.sin(timeFactor) * 0.1; // 减小波动幅度
-      
-      // 添加极小的随机波动
-      const random = (Math.random() - 0.5) * 0.2; // 减小随机波动
-      
-      // 限制波动范围
-      let newValue = base + wave + random;
-      newValue = Math.max(19.7, Math.min(20.3, newValue));
-      
-      // 平滑过渡
-      const smoothValue = lastValue * 0.8 + newValue * 0.2;
-      this.chartData.push(smoothValue);
-      
-      this.chainChart.setOption({
-        series: [{
-          data: this.chartData
-        }]
-      });
+      // 1. 更新上链趋势图
+      if (this.chainChart) {
+        this.chartData.shift();
+        const lastValue = this.chartData[this.chartData.length - 1] || 20;
+        const base = 20;
+        const timeFactor = Date.now() / 60000;
+        let wave = Math.sin(timeFactor) * 0.1;
+        const random = (Math.random() - 0.5) * 0.2;
+        let newValue = Math.max(19.7, Math.min(20.3, base + wave + random));
+        const smoothValue = lastValue * 0.8 + newValue * 0.2;
+        this.chartData.push(smoothValue);
+        this.chainChart.setOption({ series: [{ data: this.chartData }] });
+      }
+
+      // 2. 更新雷达图数据 (模拟波动)
+      if (this.radarChart) {
+        this.radarData = this.radarData.map(val => {
+          let change = Math.floor(Math.random() * 5) - 2;
+          let newVal = val + change;
+          return Math.max(70, Math.min(99, newVal));
+        });
+        this.radarChart.setOption({
+          series: [{
+            data: [{ value: this.radarData }]
+          }]
+        });
+      }
     },
     
     // 初始化粒子效果
@@ -1306,7 +871,7 @@ export default {
       }
     },
     
-    // 初始化数据流 - 改为5个区块消失一个
+    // 初始化数据流
     initDataStream() {
       if (!this.dataStreaming) return;
       
@@ -1336,7 +901,6 @@ export default {
         
         // 添加到私有链
         this.chain1Blocks.unshift(newBlock);
-        // 五个区块就消失一个
         if (this.chain1Blocks.length > 5) {
           this.chain1Blocks.pop();
         }
@@ -1353,12 +917,22 @@ export default {
           chain2Block.productId = this.generateProductId();
           
           this.chain2Blocks.unshift(chain2Block);
-          // 五个区块就消失一个
           if (this.chain2Blocks.length > 5) {
             this.chain2Blocks.pop();
           }
         }
-        
+
+        // 模拟智能合约调用数增加
+        this.smartContracts.forEach(c => {
+          c.calls += Math.floor(Math.random() * 5);
+        });
+
+        // 模拟成员贡献积分微调
+        if (Math.random() > 0.7) {
+          const randomMember = this.allianceMembers[Math.floor(Math.random() * this.allianceMembers.length)];
+          randomMember.credit = Math.min(100, randomMember.credit + 1);
+        }
+
         // 更新统计数据
         this.blockchainStats.totalBlocks = this.currentBlockHeight;
         this.blockchainStats.todayTransactions = parseInt(this.blockchainStats.todayTransactions) + Math.floor(Math.random() * 2) + 1;
@@ -1384,14 +958,12 @@ export default {
       if (this.timeInterval) clearInterval(this.timeInterval);
       if (this.dataStreamInterval) clearInterval(this.dataStreamInterval);
       if (this.messageTimer) clearTimeout(this.messageTimer);
-      if (this.chartUpdateTimer) clearInterval(this.chartUpdateTimer);
     },
     
     // 处理窗口大小变化
     handleResize() {
-      if (this.chainChart) {
-        this.chainChart.resize();
-      }
+      if (this.chainChart) this.chainChart.resize();
+      if (this.radarChart) this.radarChart.resize();
     },
     
     // 刷新数据
@@ -1399,16 +971,12 @@ export default {
       this.syncProgress = 0;
       this.showMessageFn('开始同步数据...', 'info');
       
-      // 模拟同步过程
       const syncInterval = setInterval(() => {
         this.syncProgress += 20;
         if (this.syncProgress >= 100) {
           clearInterval(syncInterval);
           this.syncProgress = 100;
-          
-          // 更新活跃节点数
           this.blockchainStats.activeNodes = 12 + Math.floor(Math.random() * 4);
-          
           this.showMessageFn('数据已同步更新', 'success');
         }
       }, 200);
@@ -1439,10 +1007,10 @@ export default {
       this.showMessageFn(`切换到${modeNames[this.dataMode]}模式`, 'info');
     },
     
-    // 获取节点样式 - 调整节点间距以适应5个节点
+    // 获取节点样式
     getNodeStyle(index, chain) {
       const baseDelay = index * 0.1;
-      const translateX = index * 60; // 减小间距以适应5个节点
+      const translateX = index * 60;
       const translateY = chain === 'chain1' ? -50 : 30;
       const scale = 1 + (index * 0.05);
       
@@ -1453,11 +1021,10 @@ export default {
       };
     },
     
-    // 获取链间连接线样式 - 调整位置以适应5个节点
+    // 获取链间连接线样式
     getInterChainLineStyle(index) {
-      const translateX = index * 60 + 25; // 调整位置
+      const translateX = index * 60 + 25;
       const height = 80;
-      
       return {
         left: `${translateX}px`,
         height: `${height}px`,
@@ -1475,85 +1042,6 @@ export default {
     inspectBlock(block) {
       this.selectedBlock = block;
       this.showMessageFn(`已选中区块 #${block.number}`, 'info');
-    },
-    
-    // 搜索溯源 - 随机选择模板
-    searchTrace() {
-      if (!this.queryId.trim()) {
-        this.showMessageFn('请输入产品ID或批次号', 'warning');
-        return;
-      }
-      
-      // 保存到最近查询
-      this.addRecentQuery(this.queryId);
-      
-      // 随机选择一个溯源模板
-      const randomTemplate = this.traceTemplates[Math.floor(Math.random() * this.traceTemplates.length)];
-      
-      // 创建溯源结果
-      this.traceResult = {
-        ...randomTemplate,
-        productId: this.queryId,
-        updateTime: this.formatTime(Date.now())
-      };
-      
-      // 确保内容完全显示
-      this.$nextTick(() => {
-        const container = this.$refs.traceResultContainer;
-        if (container) {
-          container.scrollTop = 0;
-        }
-      });
-      
-      this.showMessageFn(`已找到产品 ${this.queryId} 的溯源记录`, 'success');
-    },
-    
-    // 添加最近查询
-    addRecentQuery(queryId) {
-      // 检查是否已存在相同查询
-      const existingIndex = this.recentQueries.findIndex(q => q.id === queryId);
-      if (existingIndex > -1) {
-        this.recentQueries.splice(existingIndex, 1);
-      }
-      
-      const query = {
-        id: queryId,
-        time: new Date().toLocaleTimeString('zh-CN', {
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        status: '成功',
-        statusClass: 'success'
-      };
-      
-      this.recentQueries.unshift(query);
-      if (this.recentQueries.length > 5) {
-        this.recentQueries.pop();
-      }
-      
-      // 保存到本地存储
-      localStorage.setItem('recentQueries', JSON.stringify(this.recentQueries));
-    },
-    
-    // 清空最近查询
-    clearRecentQueries() {
-      if (confirm('确定要清空最近查询记录吗？')) {
-        this.recentQueries = [];
-        localStorage.removeItem('recentQueries');
-        this.showMessageFn('已清空最近查询记录', 'info');
-      }
-    },
-    
-    // 加载最近查询
-    loadRecentQueries() {
-      try {
-        const saved = localStorage.getItem('recentQueries');
-        if (saved) {
-          this.recentQueries = JSON.parse(saved);
-        }
-      } catch (e) {
-        console.log('加载最近查询记录失败', e);
-      }
     },
     
     // 格式化数字
@@ -1584,10 +1072,8 @@ export default {
       
       if (minutes < 1) return '刚刚';
       if (minutes < 60) return `${minutes}分钟前`;
-      
       const hours = Math.floor(minutes / 60);
       if (hours < 24) return `${hours}小时前`;
-      
       const days = Math.floor(hours / 24);
       return `${days}天前`;
     }
@@ -2094,7 +1580,7 @@ export default {
   overflow: visible;
 }
 
-/* 链标签 - 只调整私有链位置 */
+/* 链标签 */
 .light-theme .chain-label {
   position: absolute;
   z-index: 10;
@@ -2103,14 +1589,12 @@ export default {
   pointer-events: none;
 }
 
-/* 私有链标签 - 向下移动 */
 .light-theme .private-chain {
   top: 42%;
   left: 2%;
   transform: translateY(-50%);
 }
 
-/* 联盟链标签 - 保持位置不变 */
 .light-theme .alliance-chain {
   top: 68%;
   left: 2%;
@@ -2141,11 +1625,11 @@ export default {
   background: rgba(0, 168, 107, 0.05);
 }
 
-/* 两条主链连接线 - 调整以适应5个节点 */
+/* 两条主链连接线 */
 .light-theme .chain-line {
   position: absolute;
-  left: 15%; /* 增加左边距 */
-  right: 15%; /* 增加右边距 */
+  left: 15%;
+  right: 15%;
   height: 2px;
   z-index: 1;
 }
@@ -2172,12 +1656,12 @@ export default {
   );
 }
 
-/* 链容器 - 调整以适应5个节点 */
+/* 链容器 */
 .light-theme .chain-nodes {
   position: absolute;
   top: 0;
-  left: 15%; /* 增加左边距 */
-  width: 70%; /* 减少宽度以适应5个节点 */
+  left: 15%;
+  width: 70%;
   height: 100%;
   z-index: 2;
 }
@@ -2192,7 +1676,6 @@ export default {
   transform: translateY(-50%);
 }
 
-/* 调整节点样式以适应5个节点 */
 .light-theme .block-node {
   position: absolute;
   left: 0;
@@ -2202,7 +1685,6 @@ export default {
   z-index: 2;
 }
 
-/* 调整节点大小以适应5个节点 */
 .light-theme .node-core {
   width: 58px;
   height: 58px;
@@ -2284,7 +1766,6 @@ export default {
   z-index: 1;
 }
 
-/* 调整节点文字大小 */
 .light-theme .node-number {
   font-size: 14px;
   font-weight: bold;
@@ -2303,12 +1784,11 @@ export default {
   margin-top: 2px;
 }
 
-/* 调整连接线长度以适应5个节点 */
 .light-theme .node-connection {
   position: absolute;
   top: 50%;
   left: 100%;
-  width: 55px; /* 减少连接线长度 */
+  width: 55px;
   height: 2px;
   background: linear-gradient(90deg, 
     rgba(10, 102, 204, 0.4),
@@ -2324,7 +1804,6 @@ export default {
   );
 }
 
-/* 链间连接线 - 调整以适应5个节点 */
 .light-theme .inter-chain-connections {
   position: absolute;
   top: 35%;
@@ -2349,12 +1828,8 @@ export default {
 }
 
 @keyframes interChainPulse {
-  0%, 100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.7;
-  }
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
 }
 
 /* 区块详情 */
@@ -2509,587 +1984,263 @@ export default {
   font-weight: 500;
 }
 
-/* 右侧面板样式 - 优化高度和滚动 */
+/* 右侧面板样式 - 联盟生态监控 (New) */
 .light-theme .right-panel {
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
-.light-theme .trace-query {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.95),
-    rgba(240, 245, 255, 0.8)
-  );
-  border: 1px solid rgba(10, 102, 204, 0.15);
-  border-radius: 12px;
-  padding: 15px;
+.light-theme .network-radar-container {
+  flex: 0 0 35%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  min-height: 200px;
+  border-bottom: 1px solid rgba(10, 102, 204, 0.1);
   margin-bottom: 15px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.light-theme .query-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.light-theme .input-prefix {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.light-theme .prefix-icon {
-  font-size: 16px;
-  color: #0a66cc;
-  animation: searchPulse 2s infinite;
-}
-
-@keyframes searchPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-.light-theme .prefix-text {
+.light-theme .chart-title {
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.7);
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 5px;
+  width: 100%;
+  text-align: left;
 }
 
-.light-theme .custom-input {
-  display: flex;
+.light-theme .radar-chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* 智能合约监控 */
+.light-theme .contracts-monitor {
+  flex: 0 0 auto;
+  margin-bottom: 15px;
+}
+
+.light-theme .section-label {
+  font-size: 11px;
+  color: rgba(0,0,0,0.5);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.light-theme .contracts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
-.light-theme .custom-input input {
-  flex: 1;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(10, 102, 204, 0.2);
-  border-radius: 8px;
-  color: #333;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-}
-
-.light-theme .custom-input input:focus {
-  outline: none;
-  border-color: #0a66cc;
-  box-shadow: 0 0 10px rgba(10, 102, 204, 0.15);
-}
-
-.light-theme .custom-input input::placeholder {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.light-theme .query-btn {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #0066ff, #0a66cc);
-  border: none;
+.light-theme .contract-card {
+  background: rgba(10, 102, 204, 0.03);
+  border: 1px solid rgba(10, 102, 204, 0.1);
   border-radius: 6px;
-  color: #fff;
-  font-size: 14px;
-  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
   transition: all 0.3s ease;
-  white-space: nowrap;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(10, 102, 204, 0.2);
 }
 
-.light-theme .query-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 15px rgba(10, 102, 204, 0.3);
+.light-theme .contract-card:hover {
+  background: rgba(10, 102, 204, 0.08);
+  transform: translateY(-2px);
 }
 
-.light-theme .query-examples {
+.light-theme .contract-icon {
+  font-size: 16px;
+  margin-bottom: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+}
+
+.light-theme .contract-icon.trace { background: rgba(0, 168, 107, 0.1); }
+.light-theme .contract-icon.quality { background: rgba(10, 102, 204, 0.1); }
+.light-theme .contract-icon.finance { background: rgba(255, 153, 0, 0.1); }
+
+.light-theme .contract-info {
+  text-align: center;
+}
+
+.light-theme .contract-name {
+  font-size: 10px;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.light-theme .contract-calls {
   font-size: 12px;
-  margin-top: 10px;
-  flex-wrap: wrap;
+  font-weight: bold;
+  color: #333;
 }
 
-.light-theme .example-label {
-  color: rgba(0, 0, 0, 0.5);
-  flex-shrink: 0;
+.light-theme .contract-status {
+  position: absolute;
+  top: 5px;
+  right: 5px;
 }
 
-.light-theme .example-item {
-  color: #0a66cc;
-  cursor: pointer;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: rgba(10, 102, 204, 0.08);
-  border: 1px solid transparent;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
+.light-theme .status-dot.pulse {
+  background: #00a86b;
+  width: 4px;
+  height: 4px;
+  box-shadow: 0 0 5px rgba(0, 168, 107, 0.5);
+  animation: pulse 1s infinite;
 }
 
-.light-theme .example-item:hover {
-  background: rgba(10, 102, 204, 0.15);
-  border-color: rgba(10, 102, 204, 0.2);
-  transform: translateY(-1px);
-}
-
-/* 溯源结果容器 - 优化滚动 */
-.light-theme .trace-result-container {
+/* 联盟成员列表 */
+.light-theme .member-list-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.light-theme .list-header {
+  display: flex;
+  padding: 8px 10px;
+  background: rgba(0,0,0,0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.light-theme .col-org { flex: 2; }
+.light-theme .col-role { flex: 1.2; text-align: center; }
+.light-theme .col-credit { flex: 1; text-align: right; }
+
+.light-theme .member-list-content {
+  flex: 1;
   overflow-y: auto;
   padding-right: 5px;
 }
 
-.light-theme .trace-result-container::-webkit-scrollbar {
-  width: 4px;
+.light-theme .member-list-content::-webkit-scrollbar {
+  width: 3px;
 }
-
-.light-theme .trace-result-container::-webkit-scrollbar-track {
+.light-theme .member-list-content::-webkit-scrollbar-track {
   background: rgba(10, 102, 204, 0.08);
-  border-radius: 2px;
 }
-
-.light-theme .trace-result-container::-webkit-scrollbar-thumb {
+.light-theme .member-list-content::-webkit-scrollbar-thumb {
   background: rgba(10, 102, 204, 0.2);
   border-radius: 2px;
 }
 
-.light-theme .trace-result {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(10, 102, 204, 0.15);
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.light-theme .result-header {
+.light-theme .member-row {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 15px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(10, 102, 204, 0.1);
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  font-size: 12px;
+  transition: all 0.2s ease;
 }
 
-.light-theme .result-title h4 {
-  margin: 0 0 6px 0;
-  font-size: 14px;
+.light-theme .member-row:hover {
+  background: rgba(10, 102, 204, 0.05);
+}
+
+.light-theme .member-row .col-org {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.light-theme .org-icon {
+  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.03);
+  border-radius: 4px;
+}
+
+.light-theme .org-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.light-theme .org-name {
+  font-weight: 500;
   color: #333;
 }
 
-.light-theme .product-id-display {
-  font-size: 16px;
+.light-theme .org-type {
+  font-size: 10px;
+  color: #888;
+}
+
+.light-theme .role-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
   font-weight: 500;
-  color: #0a66cc;
-  text-shadow: 0 0 5px rgba(10, 102, 204, 0.1);
+  border: 1px solid transparent;
 }
 
-.light-theme .result-status {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
+.light-theme .role-badge.leader {
+  background: rgba(255, 102, 0, 0.1);
+  color: #ff6600;
+  border-color: rgba(255, 102, 0, 0.2);
 }
 
-.light-theme .status-badge {
-  padding: 4px 8px;
-  font-size: 11px;
-  border-radius: 12px;
-  border: 1px solid;
-}
-
-.light-theme .status-badge.complete {
+.light-theme .role-badge.validator {
   background: rgba(0, 168, 107, 0.1);
   color: #00a86b;
   border-color: rgba(0, 168, 107, 0.2);
 }
 
-.light-theme .status-badge.warning {
-  background: rgba(255, 153, 0, 0.1);
-  color: #ff9900;
-  border-color: rgba(255, 153, 0, 0.2);
-}
-
-.light-theme .status-badge.partial {
+.light-theme .role-badge.regulator {
   background: rgba(10, 102, 204, 0.1);
   color: #0a66cc;
   border-color: rgba(10, 102, 204, 0.2);
 }
 
-.light-theme .status-badge.processing {
-  background: rgba(102, 153, 255, 0.1);
-  color: #6699ff;
-  border-color: rgba(102, 153, 255, 0.2);
+.light-theme .role-badge.observer {
+  background: rgba(128, 128, 128, 0.1);
+  color: #666;
+  border-color: rgba(128, 128, 128, 0.2);
 }
 
-.light-theme .status-time {
-  font-size: 11px;
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.light-theme .product-quick-info {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 15px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.light-theme .quick-info-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 6px;
-}
-
-.light-theme .info-label {
-  font-size: 11px;
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.light-theme .info-value {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.light-theme .info-value.success {
-  color: #00a86b;
-}
-
-.light-theme .info-value.warning {
-  color: #ff9900;
-}
-
-.light-theme .info-value.processing {
-  color: #6699ff;
-}
-
-.light-theme .info-value.pending {
-  color: #666666;
-}
-
-.light-theme .info-value.shipped {
-  color: #9966ff;
-}
-
-.light-theme .info-value.excellent {
-  color: #00a86b;
-}
-
-.light-theme .info-value.good {
-  color: #6699ff;
-}
-
-.light-theme .info-value.poor {
-  color: #ff4d4d;
-}
-
-.light-theme .info-value.pending {
-  color: #666666;
-}
-
-/* 时间线容器 */
-.light-theme .trace-timeline-wrapper {
-  margin-top: 15px;
-}
-
-.light-theme .timeline-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 6px;
-  border: 1px solid rgba(10, 102, 204, 0.1);
-}
-
-.light-theme .timeline-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: #333;
-}
-
-.light-theme .timeline-stats {
+.light-theme .col-credit {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 3px;
-  font-size: 11px;
-  color: rgba(0, 0, 0, 0.6);
+  gap: 2px;
 }
 
-.light-theme .scroll-hint {
-  font-size: 10px;
-  color: rgba(10, 102, 204, 0.6);
-}
-
-/* 可滚动的时间线容器 */
-.light-theme .timeline-container {
-  position: relative;
-  padding-left: 30px;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 5px;
-}
-
-.light-theme .timeline-container::-webkit-scrollbar {
-  width: 4px;
-}
-
-.light-theme .timeline-container::-webkit-scrollbar-track {
-  background: rgba(10, 102, 204, 0.08);
+.light-theme .credit-bar-bg {
+  width: 50px;
+  height: 3px;
+  background: rgba(0,0,0,0.05);
   border-radius: 2px;
-}
-
-.light-theme .timeline-container::-webkit-scrollbar-thumb {
-  background: rgba(10, 102, 204, 0.2);
-  border-radius: 2px;
-}
-
-.light-theme .timeline-item {
-  position: relative;
-  margin-bottom: 18px;
-}
-
-.light-theme .timeline-marker {
-  position: absolute;
-  left: -30px;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 30px;
-}
-
-.light-theme .marker-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(10, 102, 204, 0.1);
-  border: 1px solid rgba(10, 102, 204, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  z-index: 2;
-}
-
-.light-theme .marker-line {
-  flex: 1;
-  width: 2px;
-  background: linear-gradient(
-    to bottom,
-    rgba(10, 102, 204, 0.3),
-    rgba(10, 102, 204, 0.1)
-  );
-  margin-top: 4px;
-}
-
-.light-theme .timeline-content {
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(10, 102, 204, 0.1);
-  border-radius: 8px;
-  padding: 10px 12px;
-  transition: all 0.3s ease;
-}
-
-.light-theme .timeline-item:hover .timeline-content {
-  border-color: rgba(10, 102, 204, 0.2);
-  transform: translateX(3px);
-  background: rgba(255, 255, 255, 0.8);
-}
-
-.light-theme .timeline-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-  padding: 0;
-  background: transparent;
-  border: none;
-}
-
-.light-theme .timeline-stage {
-  font-size: 12px;
-  font-weight: 500;
-  color: #333;
-}
-
-.light-theme .timeline-time {
-  font-size: 10px;
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.light-theme .timeline-desc {
-  font-size: 11px;
-  color: rgba(0, 0, 0, 0.7);
-  line-height: 1.4;
-  margin-bottom: 6px;
-}
-
-.light-theme .timeline-meta {
-  display: flex;
-  gap: 10px;
-  font-size: 10px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.light-theme .meta-item {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.light-theme .meta-icon {
-  font-size: 9px;
-}
-
-/* 最近查询 */
-.light-theme .recent-queries {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(10, 102, 204, 0.15);
-  border-radius: 8px;
-  padding: 15px;
-  margin-top: 10px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.light-theme .queries-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.light-theme .queries-header h4 {
-  margin: 0;
-  font-size: 13px;
-  color: #333;
-}
-
-.light-theme .queries-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.light-theme .queries-count {
-  font-size: 11px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.light-theme .clear-btn {
-  padding: 3px 8px;
-  background: rgba(255, 77, 77, 0.1);
-  border: 1px solid rgba(255, 77, 77, 0.2);
-  border-radius: 4px;
-  color: #ff4d4d;
-  font-size: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.light-theme .clear-btn:hover {
-  background: rgba(255, 77, 77, 0.15);
-  transform: translateY(-1px);
-}
-
-.light-theme .queries-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 180px;
-  overflow-y: auto;
-  padding-right: 5px;
-}
-
-.light-theme .queries-list::-webkit-scrollbar {
-  width: 3px;
-}
-
-.light-theme .queries-list::-webkit-scrollbar-track {
-  background: rgba(10, 102, 204, 0.08);
-  border-radius: 2px;
-}
-
-.light-theme .queries-list::-webkit-scrollbar-thumb {
-  background: rgba(10, 102, 204, 0.2);
-  border-radius: 2px;
-}
-
-.light-theme .query-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 6px;
-  border: 1px solid rgba(10, 102, 204, 0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.light-theme .query-item:hover {
-  background: rgba(10, 102, 204, 0.08);
-  border-color: rgba(10, 102, 204, 0.2);
-  transform: translateX(3px);
-}
-
-.light-theme .query-icon {
-  font-size: 12px;
-  color: #0a66cc;
-  flex-shrink: 0;
-}
-
-.light-theme .query-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.light-theme .query-id {
-  font-size: 12px;
-  color: #0a66cc;
-  font-weight: 500;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-bottom: 2px;
 }
 
-.light-theme .query-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.light-theme .credit-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #0a66cc, #00c6ff);
+  border-radius: 2px;
+  transition: width 0.5s ease;
 }
 
-.light-theme .query-time {
+.light-theme .credit-val {
   font-size: 10px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.light-theme .query-status {
-  font-size: 9px;
-  padding: 1px 5px;
-  border-radius: 10px;
-  background: rgba(0, 168, 107, 0.1);
-  color: #00a86b;
-  border: 1px solid rgba(0, 168, 107, 0.2);
+  color: #0a66cc;
+  font-weight: bold;
 }
 
 /* 底部状态栏 */
@@ -3260,7 +2411,6 @@ export default {
     width: 50px;
   }
   
-  /* 响应式下调整链标签位置 */
   .light-theme .private-chain {
     left: 1%;
   }
@@ -3287,7 +2437,6 @@ export default {
     order: 2;
   }
   
-  /* 在小屏幕下进一步调整链标签位置 */
   .light-theme .private-chain {
     left: 3%;
     top: 40%;
@@ -3330,7 +2479,6 @@ export default {
     justify-content: flex-start;
   }
   
-  /* 在移动设备上调整链标签位置 */
   .light-theme .chain-label {
     font-size: 11px;
   }

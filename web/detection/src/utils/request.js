@@ -3,7 +3,7 @@ import router from "@/router";
 
 // 创建可一个新的axios对象
 const request = axios.create({
-    baseURL: process.env.VUE_APP_BASEURL,   // 后端的接口地址
+    baseURL: '/api',   // 使用代理，通过 vue.config.js 中的 proxy 转发到后端
     timeout: 30000
 })
 
